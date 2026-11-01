@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rajswa Vad Portal - Uttar Kashi</title>
+  <title>राजस्व वादों का विवरण पत्र - जनपद उत्तरकाशी</title>
   <style>
     :root {
       --primary: #1e3a8a;
@@ -40,7 +40,6 @@
     table.report-table th { background: #e2e8f0; }
     .align-left { text-align: left !important; padding-left: 6px !important; }
 
-    /* Login Modal Styles */
     #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; }
     .login-card { background: #fff; width: 380px; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     .login-card select, .login-card input { width: 100%; padding: 8px; margin-bottom: 12px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 4px; }
@@ -52,69 +51,85 @@
   <!-- LOGIN MODAL -->
   <div id="loginOverlay">
     <div class="login-card">
-      <h3 style="color: #1e3a8a; margin-top:0;">🏛️ Rajswa Portal Login</h3>
-      <div style="text-align: left; font-size:12px; font-weight:bold; margin-bottom:4px;">Select Court / Role:</div>
+      <h3 style="color: #1e3a8a; margin-top:0;">🏛️ राजस्व वाद पोर्टल - लॉगिन</h3>
+      <div style="text-align: left; font-size:12px; font-weight:bold; margin-bottom:4px;">न्यायालय / भूमिका चुनें:</div>
       <select id="loginRole">
-        <option value="admin">🔒 District Admin (Full Control)</option>
-        <option value="Collector Uttarkashi">Collector Uttarkashi</option>
-        <option value="Tehsildar Bhatwari">Tehsildar Bhatwari</option>
-        <option value="Tehsildar Dunda">Tehsildar Dunda</option>
-        <option value="Tehsildar Barkot">Tehsildar Barkot</option>
-        <option value="Tehsildar Purola">Tehsildar Purola</option>
+        <option value="admin">🔒 जिला कार्यालय / एडमिन (पूर्ण नियंत्रण)</option>
+        <option value="कलेक्टर उत्तरकाशी">कलेक्टर उत्तरकाशी</option>
+        <option value="असिस्टेन्ट कलेक्टर भटवाड़ी">असिस्टेन्ट कलेक्टर भटवाड़ी</option>
+        <option value="असिस्टेट कलेक्टर, डुण्डा">असिस्टेट कलेक्टर, डुण्डा</option>
+        <option value="असिस्टेट कलेक्टर, बड़कोट">असिस्टेट कलेक्टर, बड़कोट</option>
+        <option value="असिस्टेट कलेक्टर, पुरोला">असिस्टेट कलेक्टर, पुरोला</option>
+        <option value="तहसीलदार भटवाड़ी">तहसीलदार भटवाड़ी</option>
+        <option value="तहसीलदार, डुण्डा">तहसीलदार, डुण्डा</option>
+        <option value="तहसीलदार, बड़कोट">तहसीलदार, बड़कोट</option>
+        <option value="तहसीलदार, पुरोला">तहसीलदार, पुरोला</option>
+        <option value="तहसीलदार, चिन्यालीसौड़">तहसीलदार, चिन्यालीसौड़</option>
+        <option value="तहसीलदार, मोरी">तहसीलदार, मोरी</option>
+        <option value="नायब तहसीलदार उप तह० जोशियाड़ा">नायब तहसीलदार उप तह० जोशियाड़ा</option>
+        <option value="नायब तहसीलदार (उप तह० धौन्तरी)">नायब तहसीलदार (उप तह० धौन्तरी)</option>
       </select>
-      <div style="text-align: left; font-size:12px; font-weight:bold; margin-bottom:4px;">Password:</div>
-      <input type="password" id="loginPassword" placeholder="Enter password (default: pass123)">
-      <button onclick="handleLogin()">Login</button>
+      <div style="text-align: left; font-size:12px; font-weight:bold; margin-bottom:4px;">पासवर्ड:</div>
+      <input type="password" id="loginPassword" placeholder="पासवर्ड दर्ज करें (डिफ़ॉल्ट: pass123)">
+      <button onclick="handleLogin()">लॉगिन करें</button>
       <div id="loginErr" style="color: red; font-size: 11px; margin-top: 8px; display: none;"></div>
-      <div style="font-size: 11px; color: #64748b; margin-top: 10px;">Admin Pass: <code>admin123</code> | Operator Pass: <code>pass123</code></div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 10px;">एडमिन पासवर्ड: <code>admin123</code> | ऑपरेटर पासवर्ड: <code>pass123</code></div>
     </div>
   </div>
 
   <div class="container">
     <div style="display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-size: 12px;">
-      <span>👤 Logged in as: <strong id="currentUserLabel">Admin</strong></span>
-      <button onclick="handleLogout()" style="background: #dc2626; color: #fff; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer;">Logout 🔒</button>
+      <span>👤 लॉगिन उपयोगकर्ता: <strong id="currentUserLabel">एडमिन</strong></span>
+      <button onclick="handleLogout()" style="background: #dc2626; color: #fff; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer;">लॉगआउट 🔒</button>
     </div>
 
     <div class="tab-bar">
-      <button class="tab-btn active" id="btnA" onclick="switchTab('A')">Praroop 'A'</button>
-      <button class="tab-btn" id="btnB" onclick="switchTab('B')">Praroop 'B'</button>
+      <button class="tab-btn active" id="btnA" onclick="switchTab('A')">प्रारूप 'अ'</button>
+      <button class="tab-btn" id="btnB" onclick="switchTab('B')">प्रारूप 'ब'</button>
     </div>
 
     <div class="header-box">
-      <h2 id="pageTitle">Praroop 'A' - Monthly Statement</h2>
+      <h2 id="pageTitle">प्रारूप 'अ' - मासिक विवरण पत्र</h2>
     </div>
 
     <div class="entry-panel">
       <div class="field" style="grid-column: span 2;">
-        <label>Court Name</label>
+        <label>न्यायालय का नाम</label>
         <select id="courtSelect" onchange="syncSections()">
-          <option value="Collector Uttarkashi">Collector Uttarkashi</option>
-          <option value="Tehsildar Bhatwari">Tehsildar Bhatwari</option>
-          <option value="Tehsildar Dunda">Tehsildar Dunda</option>
-          <option value="Tehsildar Barkot">Tehsildar Barkot</option>
-          <option value="Tehsildar Purola">Tehsildar Purola</option>
+          <option value="कलेक्टर उत्तरकाशी">कलेक्टर उत्तरकाशी</option>
+          <option value="असिस्टेन्ट कलेक्टर भटवाड़ी">असिस्टेन्ट कलेक्टर भटवाड़ी</option>
+          <option value="असिस्टेट कलेक्टर, डुण्डा">असिस्टेट कलेक्टर, डुण्डा</option>
+          <option value="असिस्टेट कलेक्टर, बड़कोट">असिस्टेट कलेक्टर, बड़कोट</option>
+          <option value="असिस्टेट कलेक्टर, पुरोला">असिस्टेट कलेक्टर, पुरोला</option>
+          <option value="तहसीलदार भटवाड़ी">तहसीलदार भटवाड़ी</option>
+          <option value="तहसीलदार, डुण्डा">तहसीलदार, डुण्डा</option>
+          <option value="तहसीलदार, बड़कोट">तहसीलदार, बड़कोट</option>
+          <option value="तहसीलदार, पुरोला">तहसीलदार, पुरोला</option>
+          <option value="तहसीलदार, चिन्यालीसौड़">तहसीलदार, चिन्यालीसौड़</option>
+          <option value="तहसीलदार, मोरी">तहसीलदार, मोरी</option>
+          <option value="नायब तहसीलदार उप तह० जोशियाड़ा">नायब तहसीलदार उप तह० जोशियाड़ा</option>
+          <option value="नायब तहसीलदार (उप तह० धौन्तरी)">नायब तहसीलदार (उप तह० धौन्तरी)</option>
         </select>
       </div>
 
       <div class="field" style="grid-column: span 2;">
-        <label>Section</label>
+        <label>अधिनियम की धारा</label>
         <select id="sectionSelect" onchange="loadRowData()"></select>
       </div>
 
-      <div class="field"><label>Opening 🔒</label><input type="number" id="opening" readonly></div>
-      <div class="field a-field"><label>Instituted</label><input type="number" id="inst" value="0"></div>
-      <div class="field a-field"><label>Disposed</label><input type="number" id="disp" value="0"></div>
+      <div class="field"><label>गत माह अवशेष 🔒</label><input type="number" id="opening" readonly></div>
+      <div class="field a-field"><label>दायर वाद</label><input type="number" id="inst" value="0"></div>
+      <div class="field a-field"><label>निस्तारित वाद</label><input type="number" id="disp" value="0"></div>
 
-      <div class="field"><label>6m - 1y</label><input type="number" id="m6" value="0"></div>
-      <div class="field"><label>1y - 3y</label><input type="number" id="y1" value="0"></div>
-      <div class="field"><label>3y - 5y</label><input type="number" id="y3" value="0"></div>
-      <div class="field"><label>5y+</label><input type="number" id="y5" value="0"></div>
+      <div class="field"><label>6 माह - 1 वर्ष</label><input type="number" id="m6" value="0"></div>
+      <div class="field"><label>1 - 3 वर्ष</label><input type="number" id="y1" value="0"></div>
+      <div class="field"><label>3 - 5 वर्ष</label><input type="number" id="y3" value="0"></div>
+      <div class="field"><label>5 वर्ष से अधिक</label><input type="number" id="y5" value="0"></div>
 
       <div class="btn-actions">
-        <button class="btn btn-submit" onclick="saveData()">Save Entry 💾</button>
-        <button class="btn btn-csv" onclick="exportCSV()">Export CSV</button>
-        <button class="btn btn-print" onclick="window.print()">Print</button>
+        <button class="btn btn-submit" onclick="saveData()">डेटा सहेजें 💾</button>
+        <button class="btn btn-csv" onclick="exportCSV()">CSV एक्सपोर्ट</button>
+        <button class="btn btn-print" onclick="window.print()">प्रिंट</button>
       </div>
     </div>
 
@@ -128,22 +143,41 @@
 
   <script>
     var currentTab = 'A';
-    var currentUser = { role: 'admin', name: 'District Admin' };
+    var currentUser = { role: 'admin', name: 'जिला कार्यालय (एडमिन)' };
 
     var dataA = [
-      { court: "Collector Uttarkashi", section: "Section 28 LR Act", open: 5, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-      { court: "Tehsildar Bhatwari", section: "Section 34/35 LR Act", open: 20, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-      { court: "Tehsildar Dunda", section: "Section 34/35 LR Act", open: 15, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-      { court: "Tehsildar Barkot", section: "Section 34/35 LR Act", open: 12, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-      { court: "Tehsildar Purola", section: "Section 34/35 LR Act", open: 10, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 }
+      { court: "कलेक्टर उत्तरकाशी", section: "धारा- 28 एल०आर०ऐक्ट", open: 5, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "कलेक्टर उत्तरकाशी", section: "धारा- 198(4) जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "कलेक्टर उत्तरकाशी", section: "धारा- 219 एल०आर०ऐक्ट", open: 1, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "कलेक्टर उत्तरकाशी", section: "धारा- 72 आबकारी अधिनियम", open: 29, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "कलेक्टर उत्तरकाशी", section: "गुण्डा अधिनियम", open: 9, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 7, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 3, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 71, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 36, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार भटवाड़ी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 57, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, डुण्डा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 33, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, बड़कोट", section: "धारा 34/35 एल०आर०ऐक्ट", open: 29, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, पुरोला", section: "धारा 34/35 एल०आर०ऐक्ट", open: 22, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, चिन्यालीसौड़", section: "धारा 34/35 एल०आर०ऐक्ट", open: 26, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, मोरी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 9, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "नायब तहसीलदार उप तह० जोशियाड़ा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 118, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "नायब तहसीलदार (उप तह० धौन्तरी)", section: "धारा 34/35 एल०आर०ऐक्ट", open: 1, inst: 0, disp: 0, m6: 0, y1: 0, y3: 0, y5: 0 }
     ];
 
     var dataB = [
-      { court: "Collector Uttarkashi", section: "Section 28 LR Act", open: 3, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-      { court: "Tehsildar Bhatwari", section: "Section 34/35 LR Act", open: 18, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-      { court: "Tehsildar Dunda", section: "Section 34/35 LR Act", open: 14, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-      { court: "Tehsildar Barkot", section: "Section 34/35 LR Act", open: 11, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-      { court: "Tehsildar Purola", section: "Section 34/35 LR Act", open: 9, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 }
+      { court: "कलेक्टर उत्तरकाशी", section: "धारा- 28 एल०आर०ऐक्ट", open: 2, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 143", open: 12, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार भटवाड़ी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 112, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, डुण्डा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 35, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, बड़कोट", section: "धारा 34/35 एल०आर०ऐक्ट", open: 17, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, पुरोला", section: "धारा 34/35 एल०आर०ऐक्ट", open: 50, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, चिन्यालीसौड़", section: "धारा 34/35 एल०आर०ऐक्ट", open: 63, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "तहसीलदार, मोरी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 28, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "नायब तहसीलदार उप तह० जोशियाड़ा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 25, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+      { court: "नायब तहसीलदार (उप तह० धौन्तरी)", section: "धारा 34/35 एल०आर०ऐक्ट", open: 10, instNew: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 }
     ];
 
     function handleLogin() {
@@ -154,12 +188,12 @@
       if (pass !== expected) {
         var err = document.getElementById('loginErr');
         err.style.display = 'block';
-        err.textContent = "Galat Password! (Default: pass123, Admin: admin123)";
+        err.textContent = "गलत पासवर्ड! (डिफ़ॉल्ट: pass123, एडमिन: admin123)";
         return;
       }
 
       currentUser.role = role;
-      currentUser.name = (role === 'admin') ? 'District Admin' : role;
+      currentUser.name = (role === 'admin') ? 'जिला कार्यालय (एडमिन)' : role;
       localStorage.setItem('rajswa_user', JSON.stringify(currentUser));
       document.getElementById('loginOverlay').style.display = 'none';
       applyPermissions();
@@ -187,7 +221,7 @@
       currentTab = tab;
       document.getElementById('btnA').className = (tab === 'A') ? 'tab-btn active' : 'tab-btn';
       document.getElementById('btnB').className = (tab === 'B') ? 'tab-btn active' : 'tab-btn';
-      document.getElementById('pageTitle').textContent = (tab === 'A') ? "Praroop 'A' - Monthly Statement" : "Praroop 'B' - Monthly Statement";
+      document.getElementById('pageTitle').textContent = (tab === 'A') ? "प्रारूप 'अ' - मासिक विवरण पत्र" : "प्रारूप 'ब' - मासिक विवरण पत्र";
       renderTable();
       syncSections();
     }
@@ -203,14 +237,14 @@
       tbody.innerHTML = '';
 
       if (currentTab === 'A') {
-        thead.innerHTML = '<tr><th>Court</th><th>#</th><th>Section</th><th>Opening</th><th>Inst.</th><th>Total</th><th>Disposed</th><th>Balance</th><th>6m</th><th>1y</th><th>3y</th><th>5y+</th></tr>';
+        thead.innerHTML = '<tr><th>न्यायालय</th><th>क्र०</th><th>धारा</th><th>गत माह अवशेष</th><th>दायर</th><th>योग</th><th>निस्तारित</th><th>अवशेष</th><th>6 माह</th><th>1 वर्ष</th><th>3 वर्ष</th><th>5 वर्ष+</th></tr>';
         list.forEach(function(r, i) {
           var tot = r.open + r.inst;
           var bal = tot - r.disp;
           tbody.innerHTML += '<tr><td>'+r.court+'</td><td>'+(i+1)+'</td><td class="align-left">'+r.section+'</td><td>'+r.open+'</td><td>'+r.inst+'</td><td><strong>'+tot+'</strong></td><td>'+r.disp+'</td><td><strong>'+bal+'</strong></td><td>'+r.m6+'</td><td>'+r.y1+'</td><td>'+r.y3+'</td><td>'+r.y5+'</td></tr>';
         });
       } else {
-        thead.innerHTML = '<tr><th>Court</th><th>#</th><th>Section</th><th>Opening</th><th>New Inst.</th><th>Total</th><th>Disposed</th><th>Balance</th><th>6m</th><th>1y</th><th>3y</th><th>5y+</th></tr>';
+        thead.innerHTML = '<tr><th>न्यायालय</th><th>क्र०</th><th>धारा</th><th>गत माह अवशेष</th><th>नये दायर</th><th>योग</th><th>निस्तारित</th><th>अवशेष</th><th>6 माह</th><th>1 वर्ष</th><th>3 वर्ष</th><th>5 वर्ष+</th></tr>';
         list.forEach(function(r, i) {
           var tot = r.open + (r.instNew || 0);
           var bal = tot - (r.dispTot || 0);
@@ -271,15 +305,14 @@
         r.y3 = parseInt(document.getElementById('y3').value) || 0;
         r.y5 = parseInt(document.getElementById('y5').value) || 0;
         renderTable();
-        alert("Data successfully saved!");
+        alert("डेटा सफलतापूर्वक सहेज लिया गया है!");
       }
     }
 
     function exportCSV() {
-      alert("CSV export triggered.");
+      alert("CSV एक्सपोर्ट शुरू हो गया है।");
     }
 
-    // Check existing session
     try {
       var sess = localStorage.getItem('rajswa_user');
       if (sess) {
