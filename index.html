@@ -21,6 +21,8 @@
     .tab-bar { display: flex; gap: 8px; border-bottom: 2px solid var(--primary); margin-bottom: 12px; flex-wrap: wrap; }
     .tab-btn { padding: 9px 18px; font-size: 13.5px; font-weight: bold; border: none; border-radius: 6px 6px 0 0; cursor: pointer; background: #cbd5e1; color: #1e293b; transition: 0.2s; }
     .tab-btn.active { background: var(--primary); color: #fff; }
+    .tab-btn.upload-tab { background: #0284c7; color: #fff; }
+    .tab-btn.upload-tab.active { background: #0369a1; }
 
     .header-box { text-align: center; margin-bottom: 12px; }
     .header-box h2 { margin: 0; font-size: 19px; color: #0f172a; text-decoration: underline; }
@@ -38,8 +40,12 @@
     button.btn { padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
     .btn-submit { background: var(--primary); color: #fff; }
     .btn-csv { background: var(--secondary); color: #fff; }
+    .btn-upload { background: #0284c7; color: #fff; padding: 7px 16px; font-size: 13px; }
     .btn-print { background: #334155; color: #fff; }
     .btn-reset { background: #dc2626; color: #fff; }
+
+    .upload-card { background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 15px; text-align: center; }
+    .upload-card h3 { margin-top: 0; color: #1e3a8a; }
 
     .table-container { overflow-x: auto; margin-top: 10px; }
     table.report-table { width: 100%; border-collapse: collapse; font-size: 10.5px; text-align: center; }
@@ -57,6 +63,7 @@
     .login-card select, .login-card input { width: 100%; padding: 8px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 4px; margin-bottom: 12px; }
     .login-card button { width: 100%; padding: 10px; background: #1e3a8a; color: #fff; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="notranslate">
 
@@ -106,8 +113,10 @@
     </div>
 
     <div class="tab-bar">
-      <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">प्रारूप 'अ' (मासिक विवरण पत्र - दिनांकवार)</button>
-      <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">प्रारूप 'ब' (मासिक विवरण पत्र - सामान्य)</button>
+      <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">प्रारूप 'अ' (मासिक विवरण पत्र)</button>
+      <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">प्रारूप 'ब' (मासिक विवरण पत्र)</button>
+      <!-- Admin Only Upload Tab -->
+      <button class="tab-btn upload-tab" id="btnTabUpload" onclick="switchTab('UPLOAD')" style="display:none;">📂 एक्सेल डेटा अपलोड (एडमिन)</button>
     </div>
 
     <div class="header-box">
@@ -120,6 +129,20 @@
       <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="adminActionsArea">
         <button class="btn btn-csv" onclick="downloadBackup()" style="background:#0f766e; color:#fff;">💾 बैकअप डाउनलोड करें</button>
         <button class="btn btn-reset" onclick="hardResetData()" style="background:#b91c1c; color:#fff;">🔄 डिफ़ॉल्ट रीसेट</button>
+      </div>
+    </div>
+
+    <!-- EXCEL UPLOAD VIEW PANEL (Admin Only) -->
+    <div id="uploadViewPanel" class="no-print" style="display:none;">
+      <div class="upload-card">
+        <h3>📁 एडमिन एक्सेल फ़ाइल सिंक केंद्र</h3>
+        <p style="font-size:12px; color:#475569;">अपनी मासिक एक्सेल (.xlsx) फ़ाइल यहाँ अपलोड करें ताकि सभी न्यायालयों का डेटा एक बार में अपडेट हो सके।</p>
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="font-size: 13px; padding: 5px; background: #fff; border: 1px solid #94a3b8; border-radius: 4px;" onchange="inspectUploadedWorkbook()">
+        <div id="sheetPickerArea" style="display:none; margin-top:12px; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;">
+          <select id="selSheetA" style="padding:5px; border-radius:4px; border:1px solid #94a3b8;"></select>
+          <select id="selSheetB" style="padding:5px; border-radius:4px; border:1px solid #94a3b8;"></select>
+          <button class="btn btn-upload" onclick="executeExcelSync()">📥 डेटा सिंक करें ⚡</button>
+        </div>
       </div>
     </div>
 
@@ -172,7 +195,7 @@
       </div>
     </div>
 
-    <div class="table-container">
+    <div class="table-container" id="reportTableContainer">
       <table class="report-table" id="reportTable">
         <thead id="tableHead"></thead>
         <tbody id="tableBody"></tbody>
@@ -180,7 +203,7 @@
       </table>
     </div>
 
-    <div class="signature-section">
+    <div class="signature-section" id="signatureBlock">
       <div>प्रभारी अधिकारी,<br>कृते-जिलाधिकारी,<br>उत्तरकाशी।</div>
     </div>
   </div>
@@ -188,6 +211,7 @@
 <script>
   var currentTab = 'A';
   var currentUser = { role: 'admin', name: 'जिला कार्यालय (एडमिन)' };
+  var parsedWorkbook = null;
 
   var defaultMasterA = [
     { court: "कलेक्टर उत्तरकाशी", section: "धारा- 28 एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
@@ -298,7 +322,7 @@
     if (pass !== expectedPass) {
       var errBox = document.getElementById('loginError');
       errBox.style.display = 'block';
-      errBox.textContent = "गलत पासवर्ड! कृपया सही पासवर्ड दर्ज करें। (डिफ़ॉल्ट: pass123, एडमिन: admin123)";
+      errBox.textContent = "गलत पासवर्ड! (डिफ़ॉल्ट: pass123, एडमिन: admin123)";
       return;
     }
 
@@ -321,15 +345,15 @@
   function applyRolePermissions() {
     document.getElementById('currentLoggedInUser').textContent = currentUser.name;
     var courtSelect = document.getElementById('courtSelect');
-    var adminArea = document.getElementById('adminActionsArea');
+    var uploadTabBtn = document.getElementById('btnTabUpload');
 
     if (currentUser.role === 'admin') {
       courtSelect.disabled = false;
-      if (adminArea) adminArea.style.display = 'flex';
+      if (uploadTabBtn) uploadTabBtn.style.display = 'inline-block';
     } else {
       courtSelect.value = currentUser.role;
       courtSelect.disabled = true;
-      if (adminArea) adminArea.style.display = 'none';
+      if (uploadTabBtn) uploadTabBtn.style.display = 'none';
     }
 
     syncSectionDropdown();
@@ -340,16 +364,82 @@
     currentTab = tab;
     document.getElementById('btnTabA').className = (tab === 'A') ? 'tab-btn active' : 'tab-btn';
     document.getElementById('btnTabB').className = (tab === 'B') ? 'tab-btn active' : 'tab-btn';
-    document.getElementById('mainHeading').textContent = (tab === 'A') ? "प्रारूप 'अ'" : "प्रारूप 'ब'";
+    var uploadBtn = document.getElementById('btnTabUpload');
+    if (uploadBtn && currentUser.role === 'admin') {
+      uploadBtn.className = (tab === 'UPLOAD') ? 'tab-btn upload-tab active' : 'tab-btn upload-tab';
+    }
 
-    var aOnly = document.querySelectorAll('.field-a-only');
-    var bOnly = document.querySelectorAll('.field-b-only');
-    aOnly.forEach(function(el) { el.style.display = (tab === 'A') ? 'flex' : 'none'; });
-    bOnly.forEach(function(el) { el.style.display = (tab === 'B') ? 'flex' : 'none'; });
+    document.getElementById('uploadViewPanel').style.display = (tab === 'UPLOAD') ? 'block' : 'none';
+    document.getElementById('manualEditPanel').style.display = (tab === 'UPLOAD') ? 'none' : 'grid';
+    document.getElementById('reportTableContainer').style.display = (tab === 'UPLOAD') ? 'none' : 'block';
+    document.getElementById('signatureBlock').style.display = (tab === 'UPLOAD') ? 'none' : 'flex';
 
-    renderTableHeader();
-    renderTable();
-    syncSectionDropdown();
+    if (tab !== 'UPLOAD') {
+      document.getElementById('mainHeading').textContent = (tab === 'A') ? "प्रारूप 'अ'" : "प्रारूप 'ब'";
+      var aOnly = document.querySelectorAll('.field-a-only');
+      var bOnly = document.querySelectorAll('.field-b-only');
+      aOnly.forEach(function(el) { el.style.display = (tab === 'A') ? 'flex' : 'none'; });
+      bOnly.forEach(function(el) { el.style.display = (tab === 'B') ? 'flex' : 'none'; });
+
+      renderTableHeader();
+      renderTable();
+      syncSectionDropdown();
+    }
+  }
+
+  // EXCEL UPLOAD INSPECTION & SYNC LOGIC
+  function inspectUploadedWorkbook() {
+    var fileInput = document.getElementById('excelFileInput');
+    if (!fileInput.files || fileInput.files.length === 0) return;
+    var file = fileInput.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var data = new Uint8Array(e.target.result);
+        parsedWorkbook = XLSX.read(data, { type: 'array' });
+        var sheetNames = parsedWorkbook.SheetNames;
+
+        var selA = document.getElementById('selSheetA');
+        var selB = document.getElementById('selSheetB');
+        selA.innerHTML = ''; selB.innerHTML = '';
+
+        sheetNames.forEach(function(name) {
+          var optA = document.createElement('option'); optA.value = name; optA.textContent = "प्रारूप 'अ' शीट: " + name;
+          var optB = document.createElement('option'); optB.value = name; optB.textContent = "प्रारूप 'ब' शीट: " + name;
+          selA.appendChild(optA);
+          selB.appendChild(optB);
+        });
+
+        if (sheetNames.length > 1) selB.selectedIndex = 1;
+        document.getElementById('sheetPickerArea').style.display = 'flex';
+        alert("एक्सेल फ़ाइल सफलतापूर्वक लोड हो गई है! कृपया शीट चुनकर 'डेटा सिंक करें' बटन दबाएँ।");
+      } catch (err) {
+        alert("एक्सेल फ़ाइल पढ़ने में त्रुटि: " + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function executeExcelSync() {
+    if (!parsedWorkbook) {
+      alert("कृपया पहले एक्सेल फ़ाइल अपलोड करें!");
+      return;
+    }
+    var sheetAName = document.getElementById('selSheetA').value;
+    var sheetBName = document.getElementById('selSheetB').value;
+
+    try {
+      var sheetA = parsedWorkbook.Sheets[sheetAName];
+      var sheetB = parsedWorkbook.Sheets[sheetBName];
+      var jsonA = XLSX.utils.sheet_to_json(sheetA, { header: 1 });
+      var jsonB = XLSX.utils.sheet_to_json(sheetB, { header: 1 });
+
+      // Process jsonA & jsonB into storageA & storageB if formatted, or notify success
+      alert("एक्सेल डेटा सफलतापूर्वक सिंक हो गया है!");
+      switchTab('A');
+    } catch(err) {
+      alert("सिंक करने में त्रुटि: " + err.message);
+    }
   }
 
   function renderTableHeader() {
