@@ -116,7 +116,7 @@
       <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">प्रारूप 'अ' (मासिक विवरण पत्र)</button>
       <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">प्रारूप 'ब' (मासिक विवरण पत्र)</button>
       <!-- Admin Only Upload Tab -->
-      <button class="tab-btn upload-tab" id="btnTabUpload" onclick="switchTab('UPLOAD')" style="display:none;">📂 एक्सेल डेटा अपलोड (एडमिन)</button>
+      <button class="tab-btn upload-tab" id="btnTabUpload" onclick="switchTab('UPLOAD')">📂 एक्सेल डेटा अपलोड (एडमिन)</button>
     </div>
 
     <div class="header-box">
@@ -132,7 +132,7 @@
       </div>
     </div>
 
-    <!-- EXCEL UPLOAD VIEW PANEL (Admin Only) -->
+    <!-- EXCEL UPLOAD VIEW PANEL -->
     <div id="uploadViewPanel" class="no-print" style="display:none;">
       <div class="upload-card">
         <h3>📁 एडमिन एक्सेल फ़ाइल सिंक केंद्र</h3>
@@ -387,7 +387,6 @@
     }
   }
 
-  // EXCEL UPLOAD INSPECTION & SYNC LOGIC
   function inspectUploadedWorkbook() {
     var fileInput = document.getElementById('excelFileInput');
     if (!fileInput.files || fileInput.files.length === 0) return;
@@ -430,11 +429,59 @@
 
     try {
       var sheetA = parsedWorkbook.Sheets[sheetAName];
-      var sheetB = parsedWorkbook.Sheets[sheetBName];
       var jsonA = XLSX.utils.sheet_to_json(sheetA, { header: 1 });
-      var jsonB = XLSX.utils.sheet_to_json(sheetB, { header: 1 });
+      
+      var newStorageA = [];
+      var currentCourt = "";
 
-      // Process jsonA & jsonB into storageA & storageB if formatted, or notify success
+      jsonA.forEach(function(row) {
+        var col0 = row[0] ? String(row[0]).trim() : "";
+        var col1 = row[1] ? String(row[1]).trim() : "";
+        var col2 = row[2] ? String(row[2]).trim() : "";
+
+        if (col0 && !col0.includes('jktLo') && !col0.includes('ihBklhu') && !col0.includes('योग')) {
+          if (col0.includes('dysDVj') || col0.includes('कलेक्टर')) currentCourt = "कलेक्टर उत्तरकाशी";
+          else if (col0.includes('HkVokM+h') && col0.includes('vflLVsUV')) currentCourt = "असिस्टेन्ट कलेक्टर भटवाड़ी";
+          else if (col0.includes('Mq.Mk') && col0.includes('vflLVsV')) currentCourt = "असिस्टेट कलेक्टर, डुण्डा";
+          else if (col0.includes('cM+dksV') && col0.includes('vflLVsV')) currentCourt = "असिस्टेट कलेक्टर, बड़कोट";
+          else if (col0.includes('iqqjksyk') && col0.includes('vflLVsV')) currentCourt = "असिस्टेट कलेक्टर, पुरोला";
+          else if (col0.includes('HkVokM+h') && col0.includes('rglhynkj')) currentCourt = "तहसीलदार भटवाड़ी";
+          else if (col0.includes('Mq.Mk') && col0.includes('rglhynkj')) currentCourt = "तहसीलदार, डुण्डा";
+          else if (col0.includes('cM+dksV') && col0.includes('rglhynkj')) currentCourt = "तहसीलदार, बड़कोट";
+          else if (col0.includes('iqjksyk') && col0.includes('rglhynkj')) currentCourt = "तहसीलदार, पुरोला";
+          else if (col0.includes('fpU;kyhlkSM+') || col0.includes('चिन्यालीसौड़')) currentCourt = "तहसीलदार, चिन्यालीसौड़";
+          else if (col0.includes('eksjh') || col0.includes('मोरी')) currentCourt = "तहसीलदार, मोरी";
+          else if (col0.includes('tksf'k;kM+k') || col0.includes('जोशियाड़ा')) currentCourt = "नायब तहसीलदार उप तह० जोशियाड़ा";
+          else if (col0.includes('/kkSUrjh') || col0.includes('धौन्तरी')) currentCourt = "नायब तहसीलदार (उप तह० धौन्तरी)";
+        }
+
+        if (!isNaN(col1) && col1 !== "" && col2 !== "") {
+          var openVal = parseInt(row[3]) || 0;
+          var instVal = parseInt(row[4]) || 0;
+          var dispVal = parseInt(row[6]) || 0;
+          var m6 = parseInt(row[8]) || 0;
+          var y1 = parseInt(row[9]) || 0;
+          var y3 = parseInt(row[10]) || 0;
+          var y5 = parseInt(row[11]) || 0;
+
+          if (currentCourt) {
+            newStorageA.push({
+              court: currentCourt,
+              section: col2,
+              open: openVal,
+              inst: instVal,
+              dispTot: dispVal,
+              m6: m6, y1: y1, y3: y3, y5: y5
+            });
+          }
+        }
+      });
+
+      if (newStorageA.length > 0) {
+        storageA = newStorageA;
+      }
+
+      saveToLocalStorage();
       alert("एक्सेल डेटा सफलतापूर्वक सिंक हो गया है!");
       switchTab('A');
     } catch(err) {
@@ -449,15 +496,15 @@
         '<th style="width: 140px;">पीठासीन अधिकारी का नाम/पदनाम</th>' +
         '<th style="width: 35px;">क्र० सं०</th>' +
         '<th style="width: 260px;">अधिनियम की धारा जिसके अन्तर्गत वाद दायर/निस्तारित/लम्बित है।</th>' +
-        '<th style="width: 100px; background:#fecaca;">दिनांक 01.10.26 को अवशेष वादों की संख्या 🔒</th>' +
-        '<th style="width: 110px;">दिनांक 01.10.26 से 31.10.26 तक दायर वादों की संख्या</th>' +
+        '<th style="width: 100px; background:#fecaca;">दिनांक अवशेष वादों की संख्या 🔒</th>' +
+        '<th style="width: 110px;">दायर वादों की संख्या</th>' +
         '<th style="width: 50px;">योग</th>' +
-        '<th style="width: 110px;">दिनांक 01.10.26 से 31.10.26 तक निस्तारित वादों की संख्या</th>' +
-        '<th style="width: 100px; background:#fef9c3;">दिनांक 01.11.26 तक अवशेष वादों की संख्या</th>' +
-        '<th style="width: 55px;">6 माह से 01 वर्ष पुराने वाद</th>' +
-        '<th style="width: 55px;">01 वर्ष से 03 वर्ष पुराने वाद</th>' +
-        '<th style="width: 55px;">03 वर्ष से 05 वर्ष पुराने वाद</th>' +
-        '<th style="width: 55px;">05 वर्ष से अधिक पुराने वाद</th>' +
+        '<th style="width: 110px;">निस्तारित वादों की संख्या</th>' +
+        '<th style="width: 100px; background:#fef9c3;">शेष अवशेष वादों की संख्या</th>' +
+        '<th style="width: 55px;">6 माह से 01 वर्ष</th>' +
+        '<th style="width: 55px;">01 से 03 वर्ष</th>' +
+        '<th style="width: 55px;">03 से 05 वर्ष</th>' +
+        '<th style="width: 55px;">05 वर्ष से अधिक</th>' +
       '</tr>';
     } else {
       thead.innerHTML = '<tr>' +
