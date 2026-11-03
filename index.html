@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="hi" translate="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="google" content="notranslate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>राजस्व वादों का विवरण पत्र (प्रारूप 'अ' एवं 'ब') - जनपद उत्तरकाशी</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --secondary: #0d9488;
+      --accent: #b45309;
+      --border-color: #475569;
+      --th-bg: #e2e8f0;
+      --grandtotal-bg: #fef08a;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+    body { background-color: #f8fafc; margin: 0; padding: 12px; color: #000; }
+    .container { max-width: 1540px; margin: 0 auto; background: #fff; padding: 18px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    
+    .tab-bar { display: flex; gap: 8px; border-bottom: 2px solid var(--primary); margin-bottom: 12px; flex-wrap: wrap; }
+    .tab-btn { padding: 9px 18px; font-size: 13.5px; font-weight: bold; border: none; border-radius: 6px 6px 0 0; cursor: pointer; background: #cbd5e1; color: #1e293b; transition: 0.2s; }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+    .tab-btn.upload-tab { background: #0284c7; color: #fff; }
+
+    .header-box { text-align: center; margin-bottom: 12px; }
+    .header-box h2 { margin: 0; font-size: 19px; color: #0f172a; text-decoration: underline; }
+    .header-box h3 { margin: 4px 0 0; font-size: 13.5px; font-weight: normal; color: #334155; }
+    
+    .notice-box { background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 12.5px; color: #166534; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+    .entry-panel { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; margin-bottom: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap: 8px; }
+    .field { display: flex; flex-direction: column; }
+    .field label { font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #334155; }
+    .field input, .field select { padding: 5px 6px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 12px; }
+    .field input[readonly], .field input.locked-field { background-color: #fee2e2; border-color: #fca5a5; color: #991b1b; font-weight: bold; cursor: not-allowed; }
+
+    .btn-actions { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+    button.btn { padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-submit { background: var(--primary); color: #fff; }
+    .btn-csv { background: var(--secondary); color: #fff; }
+    .btn-print { background: #334155; color: #fff; }
+    .btn-reset { background: #dc2626; color: #fff; }
+
+    .upload-card { background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 15px; text-align: center; }
+    .upload-card h3 { margin-top: 0; color: #1e3a8a; }
+
+    .table-container { overflow-x: auto; margin-top: 10px; }
+    table.report-table { width: 100%; border-collapse: collapse; font-size: 10.5px; text-align: center; }
+    table.report-table th, table.report-table td { border: 1px solid var(--border-color); padding: 4px 2px; line-height: 1.25; }
+    table.report-table th { background: var(--th-bg); font-weight: 600; vertical-align: middle; }
+    .align-left { text-align: left !important; padding-left: 5px !important; }
+    .subtotal-row { background: #e0f2fe; font-weight: bold; }
+    .court-header-cell { background: #f8fafc; font-weight: bold; font-size: 11px; }
+    .grandtotal-row { background: var(--grandtotal-bg); font-weight: bold; font-size: 11.5px; }
+
+    .signature-section { display: flex; justify-content: flex-end; margin-top: 35px; padding-right: 40px; text-align: center; font-size: 13px; font-weight: bold; }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { padding: 0; background: #fff; }
+      .container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+      table.report-table th, table.report-table td { border: 1px solid #000; }
+      @page { size: landscape; margin: 6mm; }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="notranslate">
+
+  <div class="container notranslate">
+    <div id="userSessionBox" style="display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 6px 12px; border-radius: 4px; margin-bottom: 10px; font-size: 12px; border: 1px solid #bae6fd;">
+      <span>🏛️ <strong>राजस्व वाद प्रबंधन पोर्टल:</strong> जिला कार्यालय, उत्तरकाशी (मास्टर कंट्रोल मोड)</span>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">प्रारूप 'अ' (दिनांकवार विवरण)</button>
+      <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">प्रारूप 'ब' (अधिनियम/धारावार)</button>
+      <button class="tab-btn upload-tab" id="btnTabUpload" onclick="switchTab('UPLOAD')">📂 एक्सेल डेटा अपलोड केंद्र</button>
+    </div>
+
+    <div class="header-box">
+      <h2 id="mainHeading">प्रारूप 'अ'</h2>
+      <h3 id="subHeading">राजस्व वादों का विवरण पत्र धारावार/तहसीलवार/न्यायालयवार विवरण पत्र माह अक्टूबर, २०२६ तक जनपद उत्तरकाशी।</h3>
+    </div>
+
+    <div class="notice-box">
+      <span id="saveStatusBadge" style="font-weight: 600; color: #166534;">🟢 <strong>डेटा स्वतः सुरक्षित (Auto-Saved)</strong></span>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <button class="btn btn-csv" onclick="downloadBackup()" style="background:#0f766e; color:#fff;">💾 बैकअप डाउनलोड करें</button>
+        <button class="btn btn-reset" onclick="hardResetData()" style="background:#b91c1c; color:#fff;">🔄 डिफ़ॉल्ट रीसेट</button>
+      </div>
+    </div>
+
+    <!-- EXCEL UPLOAD VIEW PANEL -->
+    <div id="uploadViewPanel" class="no-print" style="display:none;">
+      <div class="upload-card">
+        <h3>📁 एक्सेल फ़ाइल सिंक केंद्र (DATE WISE A & ACT WISE B)</h3>
+        <p style="font-size:12px; color:#475569;">अपनी मासिक एक्सेल (.xlsx) फ़ाइल यहाँ अपलोड करें। दोनों प्रारूपों का डेटा पूरी सटीकता के साथ सिंक हो जाएगा।</p>
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="font-size: 13px; padding: 5px; background: #fff; border: 1px solid #94a3b8; border-radius: 4px;" onchange="inspectUploadedWorkbook()">
+        <div id="sheetPickerArea" style="display:none; margin-top:12px; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;">
+          <div style="font-size:12px; font-weight:bold;">प्रारूप 'अ' शीट: <select id="selSheetA" style="padding:4px; border-radius:4px; border:1px solid #94a3b8;"></select></div>
+          <div style="font-size:12px; font-weight:bold;">प्रारूप 'ब' शीट: <select id="selSheetB" style="padding:4px; border-radius:4px; border:1px solid #94a3b8;"></select></div>
+          <button class="btn btn-upload" onclick="executeExcelSync()">📥 डेटा सिंक करें ⚡</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry-panel" id="manualEditPanel">
+      <div class="field" style="grid-column: span 2;">
+        <label>पीठासीन अधिकारी का नाम/पदनाम</label>
+        <select id="courtSelect" onchange="syncSectionDropdown()">
+          <option value="कलेक्टर उत्तरकाशी">कलेक्टर उत्तरकाशी</option>
+          <option value="असिस्टेन्ट कलेक्टर भटवाड़ी">असिस्टेन्ट कलेक्टर भटवाड़ी</option>
+          <option value="असिस्टेट कलेक्टर, डुण्डा">असिस्टेट कलेक्टर, डुण्डा</option>
+          <option value="असिस्टेट कलेक्टर, बड़कोट">असिस्टेट कलेक्टर, बड़कोट</option>
+          <option value="असिस्टेट कलेक्टर, पुरोला">असिस्टेट कलेक्टर, पुरोला</option>
+          <option value="तहसीलदार भटवाड़ी">तहसीलदार भटवाड़ी</option>
+          <option value="तहसीलदार, डुण्डा">तहसीलदार, डुण्डा</option>
+          <option value="तहसीलदार, बड़कोट">तहसीलदार, बड़कोट</option>
+          <option value="तहसीलदार, पुरोला">तहसीलदार, पुरोला</option>
+          <option value="तहसीलदार, चिन्यालीसौड़">तहसीलदार, चिन्यालीसौड़</option>
+          <option value="तहसीलदार, मोरी">तहसीलदार, मोरी</option>
+          <option value="नायब तहसीलदार उप तह० जोशियाड़ा">नायब तहसीलदार उप तह० जोशियाड़ा</option>
+          <option value="नायब तहसीलदार (उप तह० धौन्तरी)">नायब तहसीलदार (उप तह० धौन्तरी)</option>
+        </select>
+      </div>
+
+      <div class="field" style="grid-column: span 2;">
+        <label>अधिनियम की धारा</label>
+        <select id="sectionSelect" onchange="loadCurrentRowData()"></select>
+      </div>
+
+      <div class="field"><label>गत माह अवशेष 🔒</label><input type="number" id="opening" readonly class="locked-field"></div>
+      
+      <div class="field field-a-only"><label>दायर वाद</label><input type="number" id="instA" min="0" value="0"></div>
+      <div class="field field-a-only"><label>निस्तारित वाद</label><input type="number" id="dispA" min="0" value="0"></div>
+
+      <div class="field field-b-only" style="display:none;"><label>नये दायर वाद</label><input type="number" id="instNew" min="0" value="0"></div>
+      <div class="field field-b-only" style="display:none;"><label>पुनर्स्थापन</label><input type="number" id="instRest" min="0" value="0"></div>
+      <div class="field field-b-only" style="display:none;"><label>स्थानान्तरण</label><input type="number" id="instTrans" min="0" value="0"></div>
+      <div class="field field-b-only" style="display:none;"><label>अदम पैरवी</label><input type="number" id="dispAdam" min="0" value="0"></div>
+      <div class="field field-b-only" style="display:none;"><label>स्थानान्तरित</label><input type="number" id="dispTrans" min="0" value="0"></div>
+      <div class="field field-b-only" style="display:none;"><label>गुणदोष</label><input type="number" id="dispGun" min="0" value="0"></div>
+
+      <div class="field"><label>6 माह से 1 वर्ष</label><input type="number" id="m6to1y" min="0" value="0"></div>
+      <div class="field"><label>1 से 3 वर्ष</label><input type="number" id="y1to3" min="0" value="0"></div>
+      <div class="field"><label>3 से 5 वर्ष</label><input type="number" id="y3to5" min="0" value="0"></div>
+      <div class="field"><label>5 वर्ष से अधिक</label><input type="number" id="yOver5" min="0" value="0"></div>
+
+      <div class="btn-actions">
+        <button class="btn btn-submit" onclick="updateCurrentEntry()">मासिक डेटा सहेजें 💾</button>
+        <button class="btn btn-csv" onclick="exportCSV()">Excel (CSV) एक्सपोर्ट</button>
+        <button class="btn btn-print" onclick="window.print()">A4 Landscape प्रिंट / PDF</button>
+      </div>
+    </div>
+
+    <div class="table-container" id="reportTableContainer">
+      <table class="report-table" id="reportTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+        <tfoot id="tableFoot"></tfoot>
+      </table>
+    </div>
+
+    <div class="signature-section" id="signatureBlock">
+      <div>प्रभारी अधिकारी,<br>कृते-जिलाधिकारी,<br>उत्तरकाशी।</div>
+    </div>
+  </div>
+
+<script>
+  var currentTab = 'A';
+  var parsedWorkbook = null;
+
+  var defaultMasterA = [
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 28 एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 198(4) जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "पट्टा निरस्तीकरण/शुद्धिकरण", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 219 एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 40/41 एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 192 एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 72 आबकारी अधिनियम", open: 29, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "गुण्डा अधिनियम", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 71, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 33/39 एल०आर०ऐक्ट", open: 6, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 210 एल०आर०ऐक्ट", open: 17, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 41 अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पी०पी०ई०ऐक्ट", open: 28, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "भरण पोषण अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पंचायती राज अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "विवाह अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 8, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 36, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 33/39 एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 210 एल०आर०ऐक्ट", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 41 अधिनियम", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "पी०पी०ई०ऐक्ट", open: 10, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 12, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 33/39 एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 210 एल०आर०ऐक्ट", open: 14, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 41 अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "पी०पी०ई०ऐक्ट", open: 15, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 18, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 33/39 एल०आर०ऐक्ट", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 210 एल०आर०ऐक्ट", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "पी०पी०ई०ऐक्ट", open: 6, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "तहसीलदार भटवाड़ी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 57, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार भटवाड़ी", section: "धारा 33/39 एल०आर०ऐक्ट", open: 11, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार भटवाड़ी", section: "धारा 122बी जेड०ए०एल०आर०ऐक्ट", open: 14, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "तहसीलदार, डुण्डा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 33, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, डुण्डा", section: "धारा 33/39 एल०आर०ऐक्ट", open: 8, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, डुण्डा", section: "धारा 122बी जेड०ए०एल०आर०ऐक्ट", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "तहसीलदार, बड़कोट", section: "धारा 34/35 एल०आर०ऐक्ट", open: 29, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, बड़कोट", section: "धारा 33/39 एल०आर०ऐक्ट", open: 6, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, बड़कोट", section: "धारा 122बी जेड०ए०एल०आर०ऐक्ट", open: 15, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "तहसीलदार, पुरोला", section: "धारा 34/35 एल०आर०ऐक्ट", open: 22, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, पुरोला", section: "धारा 33/39 एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, पुरोला", section: "धारा 122बी जेड०ए०एल०आर०ऐक्ट", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "तहसीलदार, चिन्यालीसौड़", section: "धारा 34/35 एल०आर०ऐक्ट", open: 26, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, चिन्यालीसौड़", section: "धारा 33/39 एल०आर०ऐक्ट", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, चिन्यालीसौड़", section: "धारा 122बी जेड०ए०एल०आर०ऐक्ट", open: 12, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "तहसीलदार, मोरी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, मोरी", section: "धारा 33/39 एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, मोरी", section: "धारा 122बी जेड०ए०एल०आर०ऐक्ट", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    { court: "नायब तहसीलदार उप तह० जोशियाड़ा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 118, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "नायब तहसीलदार (उप तह० धौन्तरी)", section: "धारा 34/35 एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 }
+  ];
+
+  var defaultMasterB = JSON.parse(JSON.stringify(defaultMasterA));
+  defaultMasterB.forEach(function(r) {
+    r.instNew = 0; r.instRest = 0; r.instTrans = 0; r.instTot = 0;
+    r.dispAdam = 0; r.dispTrans = 0; r.dispGun = 0;
+  });
+
+  var storageA = [];
+  var storageB = [];
+
+  function initData() {
+    storageA = JSON.parse(JSON.stringify(defaultMasterA));
+    storageB = JSON.parse(JSON.stringify(defaultMasterB));
+    try {
+      var a = localStorage.getItem('rajswa_v6_A');
+      var b = localStorage.getItem('rajswa_v6_B');
+      if (a) storageA = JSON.parse(a);
+      if (b) storageB = JSON.parse(b);
+    } catch(e) {}
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('btnTabA').className = (tab === 'A') ? 'tab-btn active' : 'tab-btn';
+    document.getElementById('btnTabB').className = (tab === 'B') ? 'tab-btn active' : 'tab-btn';
+    document.getElementById('btnTabUpload').className = (tab === 'UPLOAD') ? 'tab-btn upload-tab active' : 'tab-btn upload-tab';
+
+    document.getElementById('uploadViewPanel').style.display = (tab === 'UPLOAD') ? 'block' : 'none';
+    document.getElementById('manualEditPanel').style.display = (tab === 'UPLOAD') ? 'none' : 'grid';
+    document.getElementById('reportTableContainer').style.display = (tab === 'UPLOAD') ? 'none' : 'block';
+    document.getElementById('signatureBlock').style.display = (tab === 'UPLOAD') ? 'none' : 'flex';
+
+    if (tab !== 'UPLOAD') {
+      document.getElementById('mainHeading').textContent = (tab === 'A') ? "प्रारूप 'अ'" : "प्रारूप 'ब'";
+      var aOnly = document.querySelectorAll('.field-a-only');
+      var bOnly = document.querySelectorAll('.field-b-only');
+      aOnly.forEach(function(el) { el.style.display = (tab === 'A') ? 'flex' : 'none'; });
+      bOnly.forEach(function(el) { el.style.display = (tab === 'B') ? 'flex' : 'none'; });
+
+      renderTableHeader();
+      renderTable();
+      syncSectionDropdown();
+    }
+  }
+
+  function inspectUploadedWorkbook() {
+    var fileInput = document.getElementById('excelFileInput');
+    if (!fileInput.files || fileInput.files.length === 0) return;
+    var file = fileInput.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var data = new Uint8Array(e.target.result);
+        parsedWorkbook = XLSX.read(data, { type: 'array' });
+        var sheetNames = parsedWorkbook.SheetNames;
+
+        var selA = document.getElementById('selSheetA');
+        var selB = document.getElementById('selSheetB');
+        selA.innerHTML = ''; selB.innerHTML = '';
+
+        sheetNames.forEach(function(name) {
+          var optA = document.createElement('option'); optA.value = name; optA.textContent = name;
+          var optB = document.createElement('option'); optB.value = name; optB.textContent = name;
+          selA.appendChild(optA);
+          selB.appendChild(optB);
+        });
+
+        for(var i=0; i<sheetNames.length; i++) {
+          if(sheetNames[i].includes('DATE WISE')) selA.selectedIndex = i;
+          if(sheetNames[i].includes('ACT WISE')) selB.selectedIndex = i;
+        }
+
+        document.getElementById('sheetPickerArea').style.display = 'flex';
+        alert("एक्सेल फ़ाइल सफलतापूर्वक लोड हो गई है! अब 'डेटा सिंक करें' बटन दबाएँ।");
+      } catch (err) {
+        alert("एक्सेल फ़ाइल पढ़ने में त्रुटि: " + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function executeExcelSync() {
+    if (!parsedWorkbook) {
+      alert("कृपया पहले एक्सेल फ़ाइल अपलोड करें!");
+      return;
+    }
+    var sheetAName = document.getElementById('selSheetA').value;
+    var sheetBName = document.getElementById('selSheetB').value;
+
+    try {
+      var sheetA = parsedWorkbook.Sheets[sheetAName];
+      var sheetB = parsedWorkbook.Sheets[sheetBName];
+      var jsonA = XLSX.utils.sheet_to_json(sheetA, { header: 1 });
+      var jsonB = XLSX.utils.sheet_to_json(sheetB, { header: 1 });
+      
+      var newStorageA = [];
+      var currentCourtA = "";
+
+      jsonA.forEach(function(row) {
+        var col0 = row[0] ? String(row[0]).trim() : "";
+        var col1 = row[1] ? String(row[1]).trim() : "";
+        var col2 = row[2] ? String(row[2]).trim() : "";
+
+        if (col0 && !col0.includes('ihBklhu') && !col0.includes('jktLo') && !col0.includes('योग') && col0 !== 'nan') {
+          if (col0.includes('dysDVj') || col0.includes('कलेक्टर')) currentCourtA = "कलेक्टर उत्तरकाशी";
+          else if (col0.includes('HkVokM+h') || col0.includes('भटवाड़ी')) currentCourtA = "असिस्टेन्ट कलेक्टर भटवाड़ी";
+          else if (col0.includes('Mq.Mk') || col0.includes('डुण्डा')) currentCourtA = "असिस्टेट कलेक्टर, डुण्डा";
+          else if (col0.includes('cM+dksV') || col0.includes('बड़कोट')) currentCourtA = "असिस्टेट कलेक्टर, बड़कोट";
+          else if (col0.includes('iqqjksyk') || col0.includes('पुरोला')) currentCourtA = "असिस्टेट कलेक्टर, पुरोला";
+          else if (col0.includes('rglhynkj HkVokM+h')) currentCourtA = "तहसीलदार भटवाड़ी";
+          else if (col0.includes('rglhynkj') && col0.includes('Mq.Mk')) currentCourtA = "तहसीलदार, डुण्डा";
+          else if (col0.includes('rglhynkj') && col0.includes('cM+dksV')) currentCourtA = "तहसीलदार, बड़कोट";
+          else if (col0.includes('rglhynkj') && col0.includes('iqjksyk')) currentCourtA = "तहसीलदार, पुरोला";
+          else if (col0.includes('fpU;kyhlkSM+') || col0.includes('चिन्यालीसौड़')) currentCourtA = "तहसीलदार, चिन्यालीसौड़";
+          else if (col0.includes('eksjh') || col0.includes('मोरी')) currentCourtA = "तहसीलदार, मोरी";
+          else if (col0.includes('tksf'k;kM+k') || col0.includes('जोशियाड़ा')) currentCourtA = "नायब तहसीलदार उप तह० जोशियाड़ा";
+          else if (col0.includes('/kkSUrjh') || col0.includes('धौन्तरी')) currentCourtA = "नायब तहसीलदार (उप तह० धौन्तरी)";
+        }
+
+        if (!isNaN(col1) && col1 !== "" && col2 !== "" && col2 !== 'nan' && currentCourtA) {
+          newStorageA.push({
+            court: currentCourtA,
+            section: col2,
+            open: parseInt(row[3]) || 0,
+            inst: parseInt(row[4]) || 0,
+            dispTot: parseInt(row[6]) || 0,
+            m6: parseInt(row[8]) || 0,
+            y1: parseInt(row[9]) || 0,
+            y3: parseInt(row[10]) || 0,
+            y5: parseInt(row[11]) || 0
+          });
+        }
+      });
+
+      if (newStorageA.length > 0) storageA = newStorageA;
+
+      var newStorageB = [];
+      var currentCourtB = "";
+
+      jsonB.forEach(function(row) {
+        var col0 = row[0] ? String(row[0]).trim() : "";
+        var col1 = row[1] ? String(row[1]).trim() : "";
+        var col2 = row[2] ? String(row[2]).trim() : "";
+
+        if (col0 && !col0.includes('ihBklhu') && !col0.includes('jktLo') && !col0.includes('योग') && col0 !== 'nan') {
+          if (col0.includes('dysDVj') || col0.includes('कलेक्टर')) currentCourtB = "कलेक्टर उत्तरकाशी";
+          else if (col0.includes('HkVokM+h') || col0.includes('भटवाड़ी')) currentCourtB = "असिस्टेन्ट कलेक्टर भटवाड़ी";
+          else if (col0.includes('Mq.Mk') || col0.includes('डुण्डा')) currentCourtB = "असिस्टेट कलेक्टर, डुण्डा";
+          else if (col0.includes('cM+dksV') || col0.includes('बड़कोट')) currentCourtB = "असिस्टेट कलेक्टर, बड़कोट";
+          else if (col0.includes('iqqjksyk') || col0.includes('पुरोला')) currentCourtB = "असिस्टेट कलेक्टर, पुरोला";
+          else if (col0.includes('rglhynkj HkVokM+h')) currentCourtB = "तहसीलदार भटवाड़ी";
+          else if (col0.includes('rglhynkj') && col0.includes('Mq.Mk')) currentCourtB = "तहसीलदार, डुण्डा";
+          else if (col0.includes('rglhynkj') && col0.includes('cM+dksV')) currentCourtB = "तहसीलदार, बड़कोट";
+          else if (col0.includes('rglhynkj') && col0.includes('iqjksyk')) currentCourtB = "तहसीलदार, पुरोला";
+          else if (col0.includes('fpU;kyhlkSM+') || col0.includes('चिन्यालीसौड़')) currentCourtB = "तहसीलदार, चिन्यालीसौड़";
+          else if (col0.includes('eksjh') || col0.includes('मोरी')) currentCourtB = "तहसीलदार, मोरी";
+          else if (col0.includes('tksf'k;kM+k') || col0.includes('जोशियाड़ा')) currentCourtB = "नायब तहसीलदार उप तह० जोशियाड़ा";
+          else if (col0.includes('/kkSUrjh') || col0.includes('धौन्तरी')) currentCourtB = "नायब तहसीलदार (उप तह० धौन्तरी)";
+        }
+
+        if (!isNaN(col1) && col1 !== "" && col2 !== "" && col2 !== 'nan' && currentCourtB) {
+          newStorageB.push({
+            court: currentCourtB,
+            section: col2,
+            open: parseInt(row[3]) || 0,
+            instNew: parseInt(row[4]) || 0,
+            instRest: parseInt(row[5]) || 0,
+            instTrans: parseInt(row[6]) || 0,
+            dispAdam: parseInt(row[9]) || 0,
+            dispTrans: parseInt(row[10]) || 0,
+            dispGun: parseInt(row[11]) || 0,
+            m6: parseInt(row[14]) || 0,
+            y1: parseInt(row[15]) || 0,
+            y3: parseInt(row[16]) || 0,
+            y5: parseInt(row[17]) || 0
+          });
+        }
+      });
+
+      if (newStorageB.length > 0) storageB = newStorageB;
+
+      saveToLocalStorage();
+      alert("एक्सेल फ़ाइल का डेटा (प्रारूप 'अ' एवं 'ब') सफलतापूर्वक सिंक हो गया है!");
+      switchTab('A');
+    } catch(err) {
+      alert("सिंक करने में त्रुटि: " + err.message);
+    }
+  }
+
+  function renderTableHeader() {
+    var thead = document.getElementById('tableHead');
+    if (currentTab === 'A') {
+      thead.innerHTML = '<tr>' +
+        '<th style="width: 140px;">पीठासीन अधिकारी का नाम/पदनाम</th>' +
+        '<th style="width: 35px;">क्र० सं०</th>' +
+        '<th style="width: 260px;">अधिनियम की धारा जिसके अन्तर्गत वाद दायर/निस्तारित/लम्बित है।</th>' +
+        '<th style="width: 100px; background:#fecaca;">दिनांक अवशेष वादों की संख्या 🔒</th>' +
+        '<th style="width: 110px;">दायर वादों की संख्या</th>' +
+        '<th style="width: 50px;">योग</th>' +
+        '<th style="width: 110px;">निस्तारित वादों की संख्या</th>' +
+        '<th style="width: 100px; background:#fef9c3;">शेष अवशेष वादों की संख्या</th>' +
+        '<th style="width: 55px;">6 माह से 01 वर्ष</th>' +
+        '<th style="width: 55px;">01 से 03 वर्ष</th>' +
+        '<th style="width: 55px;">03 से 05 वर्ष</th>' +
+        '<th style="width: 55px;">05 वर्ष से अधिक</th>' +
+      '</tr>';
+    } else {
+      thead.innerHTML = '<tr>' +
+        '<th rowspan="2">पीठासीन अधिकारी का नाम/पदनाम</th><th rowspan="2">क्र०</th><th rowspan="2">अधिनियम की धारा</th><th rowspan="2" style="background:#fecaca;">गत माह अवशेष 🔒</th>' +
+        '<th colspan="4">दायर वाद</th><th rowspan="2">कुल योग</th>' +
+        '<th colspan="4">निस्तारित वाद</th><th rowspan="2" style="background:#fef9c3;">अवशेष</th>' +
+        '<th colspan="4">अवधिवार विवरण</th>' +
+      '</tr>' +
+      '<tr>' +
+        '<th>नये दायर</th><th>पुनर्स्थापन</th><th>स्थानान्तरण</th><th>योग</th>' +
+        '<th>अदम पैरवी</th><th>स्थानान्तरित</th><th>गुणदोष</th><th>योग</th>' +
+        '<th>6 माह से 1 वर्ष</th><th>1 से 3 वर्ष</th><th>3 से 5 वर्ष</th><th>5 वर्ष से अधिक</th>' +
+      '</tr>';
+    }
+  }
+
+  function renderTable() {
+    var rawList = (currentTab === 'A') ? storageA : storageB;
+    var list = rawList;
+    
+    var tbody = document.getElementById('tableBody');
+    var tfoot = document.getElementById('tableFoot');
+    tbody.innerHTML = '';
+
+    var grouped = {};
+    list.forEach(function(item) {
+      if (!grouped[item.court]) grouped[item.court] = [];
+      grouped[item.court].push(item);
+    });
+
+    var gt = { open: 0, tot: 0, bal: 0, m6: 0, y1: 0, y3: 0, y5: 0, instA: 0, dispA: 0 };
+
+    Object.keys(grouped).forEach(function(court) {
+      var rows = grouped[court];
+      var sub = { open: 0, tot: 0, bal: 0, m6: 0, y1: 0, y3: 0, y5: 0, instA: 0, dispA: 0 };
+
+      rows.forEach(function(r, idx) {
+        var tr = document.createElement('tr');
+        var courtCell = (idx === 0) ? '<td rowspan="' + (rows.length + 1) + '" class="court-header-cell">' + court + '</td>' : '';
+
+        if (currentTab === 'A') {
+          r.tot = r.open + r.inst;
+          r.bal = r.tot - r.dispTot;
+          tr.innerHTML = courtCell + 
+            '<td>' + (idx + 1) + '</td>' +
+            '<td class="align-left">' + r.section + '</td>' +
+            '<td style="font-weight:bold;">' + r.open + '</td>' +
+            '<td>' + r.inst + '</td>' +
+            '<td style="font-weight:bold;">' + r.tot + '</td>' +
+            '<td>' + r.dispTot + '</td>' +
+            '<td style="background:#fef9c3; font-weight:bold;">' + r.bal + '</td>' +
+            '<td>' + r.m6 + '</td>' +
+            '<td>' + r.y1 + '</td>' +
+            '<td>' + r.y3 + '</td>' +
+            '<td>' + r.y5 + '</td>';
+
+          sub.open += r.open; sub.instA += r.inst; sub.tot += r.tot; sub.dispA += r.dispTot; sub.bal += r.bal;
+          sub.m6 += r.m6; sub.y1 += r.y1; sub.y3 += r.y3; sub.y5 += r.y5;
+        } else {
+          var inNew = r.instNew || 0, inRest = r.instRest || 0, inTrans = r.instTrans || 0;
+          r.instTot = inNew + inRest + inTrans;
+          r.tot = r.open + r.instTot;
+          var dAdam = r.dispAdam || 0, dTrans = r.dispTrans || 0, dGun = r.dispGun || 0;
+          r.dispTot = dAdam + dTrans + dGun;
+          r.bal = r.tot - r.dispTot;
+
+          tr.innerHTML = courtCell + 
+            '<td>' + (idx + 1) + '</td>' +
+            '<td class="align-left">' + r.section + '</td>' +
+            '<td style="font-weight:bold;">' + r.open + '</td>' +
+            '<td>' + inNew + '</td><td>' + inRest + '</td><td>' + inTrans + '</td>' +
+            '<td style="font-weight:bold;">' + r.instTot + '</td>' +
+            '<td style="font-weight:bold;">' + r.tot + '</td>' +
+            '<td>' + dAdam + '</td><td>' + dTrans + '</td><td>' + dGun + '</td>' +
+            '<td style="font-weight:bold;">' + r.dispTot + '</td>' +
+            '<td style="background:#fef9c3; font-weight:bold;">' + r.bal + '</td>' +
+            '<td>' + r.m6 + '</td><td>' + r.y1 + '</td><td>' + r.y3 + '</td><td>' + r.y5 + '</td>';
+
+          sub.open += r.open; sub.tot += r.tot; sub.bal += r.bal;
+          sub.m6 += r.m6; sub.y1 += r.y1; sub.y3 += r.y3; sub.y5 += r.y5;
+        }
+        tbody.appendChild(tr);
+      });
+
+      var subTr = document.createElement('tr');
+      subTr.className = 'subtotal-row';
+      if (currentTab === 'A') {
+        subTr.innerHTML = '<td colspan="2" style="text-align: right; font-weight: bold;">योग:-</td>' +
+          '<td style="font-weight:bold;">' + sub.open + '</td>' +
+          '<td>' + sub.instA + '</td>' +
+          '<td style="font-weight:bold;">' + sub.tot + '</td>' +
+          '<td>' + sub.dispA + '</td>' +
+          '<td style="font-weight:bold;">' + sub.bal + '</td>' +
+          '<td>' + sub.m6 + '</td><td>' + sub.y1 + '</td><td>' + sub.y3 + '</td><td>' + sub.y5 + '</td>';
+        gt.open += sub.open; gt.instA += sub.instA; gt.tot += sub.tot; gt.dispA += sub.dispA; gt.bal += sub.bal;
+      } else {
+        subTr.innerHTML = '<td colspan="2" style="text-align: right; font-weight: bold;">योग:-</td>' +
+          '<td style="font-weight:bold;">' + sub.open + '</td>' +
+          '<td colspan="4"></td>' +
+          '<td style="font-weight:bold;">' + sub.tot + '</td>' +
+          '<td colspan="4"></td>' +
+          '<td style="font-weight:bold;">' + sub.bal + '</td>' +
+          '<td>' + sub.m6 + '</td><td>' + sub.y1 + '</td><td>' + sub.y3 + '</td><td>' + sub.y5 + '</td>';
+        gt.open += sub.open; gt.tot += sub.tot; gt.bal += sub.bal;
+      }
+      tbody.appendChild(subTr);
+    });
+
+    if (currentTab === 'A') {
+      tfoot.innerHTML = '<tr class="grandtotal-row"><td colspan="3" style="text-align: right; padding-right: 10px;">कुल योग:-</td><td style="background:#fecaca;">' + gt.open + '</td><td>' + gt.instA + '</td><td>' + gt.tot + '</td><td>' + gt.dispA + '</td><td style="background:#fde047;">' + gt.bal + '</td><td colspan="4"></td></tr>';
+    } else {
+      tfoot.innerHTML = '<tr class="grandtotal-row"><td colspan="3" style="text-align: right; padding-right: 10px;">कुल योग:-</td><td style="background:#fecaca;">' + gt.open + '</td><td colspan="4"></td><td>' + gt.tot + '</td><td colspan="4"></td><td style="background:#fde047;">' + gt.bal + '</td><td colspan="4"></td></tr>';
+    }
+  }
+
+  function syncSectionDropdown() {
+    var court = document.getElementById('courtSelect').value;
+    var targetList = (currentTab === 'A') ? storageA : storageB;
+    var secSelect = document.getElementById('sectionSelect');
+    secSelect.innerHTML = '';
+
+    var matchingRows = targetList.filter(function(r) { return r.court === court; });
+    matchingRows.forEach(function(r) {
+      var opt = document.createElement('option');
+      opt.value = r.section;
+      opt.textContent = r.section;
+      secSelect.appendChild(opt);
+    });
+
+    loadCurrentRowData();
+  }
+
+  function loadCurrentRowData() {
+    var court = document.getElementById('courtSelect').value;
+    var section = document.getElementById('sectionSelect').value;
+    var targetList = (currentTab === 'A') ? storageA : storageB;
+    var r = targetList.find(function(x) { return x.court === court && x.section === section; });
+    if (r) {
+      document.getElementById('opening').value = r.open;
+      if (currentTab === 'A') {
+        document.getElementById('instA').value = r.inst;
+        document.getElementById('dispA').value = r.dispTot;
+      } else {
+        document.getElementById('instNew').value = r.instNew || 0;
+        document.getElementById('instRest').value = r.instRest || 0;
+        document.getElementById('instTrans').value = r.instTrans || 0;
+        document.getElementById('dispAdam').value = r.dispAdam || 0;
+        document.getElementById('dispTrans').value = r.dispTrans || 0;
+        document.getElementById('dispGun').value = r.dispGun || 0;
+      }
+      document.getElementById('m6to1y').value = r.m6;
+      document.getElementById('y1to3').value = r.y1;
+      document.getElementById('y3to5').value = r.y3;
+      document.getElementById('yOver5').value = r.y5;
+    }
+  }
+
+  function updateCurrentEntry() {
+    var court = document.getElementById('courtSelect').value;
+    var section = document.getElementById('sectionSelect').value;
+    var targetList = (currentTab === 'A') ? storageA : storageB;
+    var r = targetList.find(function(x) { return x.court === court && x.section === section; });
+    if (r) {
+      if (currentTab === 'A') {
+        r.inst = parseInt(document.getElementById('instA').value) || 0;
+        r.dispTot = parseInt(document.getElementById('dispA').value) || 0;
+      } else {
+        r.instNew = parseInt(document.getElementById('instNew').value) || 0;
+        r.instRest = parseInt(document.getElementById('instRest').value) || 0;
+        r.instTrans = parseInt(document.getElementById('instTrans').value) || 0;
+        r.dispAdam = parseInt(document.getElementById('dispAdam').value) || 0;
+        r.dispTrans = parseInt(document.getElementById('dispTrans').value) || 0;
+        r.dispGun = parseInt(document.getElementById('dispGun').value) || 0;
+      }
+      r.m6 = parseInt(document.getElementById('m6to1y').value) || 0;
+      r.y1 = parseInt(document.getElementById('y1to3').value) || 0;
+      r.y3 = parseInt(document.getElementById('y3to5').value) || 0;
+      r.y5 = parseInt(document.getElementById('yOver5').value) || 0;
+
+      saveToLocalStorage();
+      renderTable();
+      alert("मासिक डेटा सफलतापूर्वक सहेज लिया गया है!");
+    }
+  }
+
+  function saveToLocalStorage() {
+    localStorage.setItem('rajswa_v6_A', JSON.stringify(storageA));
+    localStorage.setItem('rajswa_v6_B', JSON.stringify(storageB));
+  }
+
+  function downloadBackup() {
+    var backupObj = {
+      date: new Date().toISOString(),
+      dataA: storageA,
+      dataB: storageB
+    };
+    var blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = "Rajswa_Backup_Uttarkashi.json";
+    a.click();
+  }
+
+  function hardResetData() {
+    if (confirm("क्या आप निश्चित रूप से डिफ़ॉल्ट डेटा रीसेट करना चाहते हैं?")) {
+      localStorage.removeItem('rajswa_v6_A');
+      localStorage.removeItem('rajswa_v6_B');
+      storageA = JSON.parse(JSON.stringify(defaultMasterA));
+      storageB = JSON.parse(JSON.stringify(defaultMasterB));
+      saveToLocalStorage();
+      renderTable();
+      syncSectionDropdown();
+      alert("डेटा सफलतापूर्वक डिफ़ॉल्ट रूप में रीसेट हो गया है!");
+    }
+  }
+
+  function exportCSV() {
+    var list = (currentTab === 'A') ? storageA : storageB;
+    var csv = "\uFEFFन्यायालय,क्र०,धारा,गत माह अवशेष,दायर,योग,निस्तारित,अवशेष,6 माह,1 वर्ष,3 वर्ष,5 वर्ष+\r\n";
+    list.forEach(function(r, i) {
+      csv += '"' + r.court + '",' + (i+1) + ',"' + r.section + '",' + r.open + ',' + (r.inst || r.instTot || 0) + ',' + r.tot + ',' + r.dispTot + ',' + r.bal + ',' + r.m6 + ',' + r.y1 + ',' + r.y3 + ',' + r.y5 + '\r\n';
+    });
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = "Rajswa_Report_" + currentTab + ".csv";
+    a.click();
+  }
+
+  initData();
+  renderTableHeader();
+  renderTable();
+  syncSectionDropdown();
+</script>
+</body>
+</html>
