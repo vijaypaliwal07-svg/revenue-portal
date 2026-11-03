@@ -75,7 +75,7 @@
 
     <div class="tab-bar">
       <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">प्रारूप 'अ' (दिनांकवार विवरण)</button>
-      <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">प्रारूप 'ब' (अधिनियम/धारावार विवरण)</button>
+      <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">प्रारूप 'ब' (अधिनियम/धारावार)</button>
       <button class="tab-btn upload-tab" id="btnTabUpload" onclick="switchTab('UPLOAD')">📂 एक्सेल डेटा अपलोड केंद्र</button>
     </div>
 
@@ -95,12 +95,12 @@
     <!-- EXCEL UPLOAD VIEW PANEL -->
     <div id="uploadViewPanel" class="no-print" style="display:none;">
       <div class="upload-card">
-        <h3>📁 एक्सेल फ़ाइल सिंक केंद्र</h3>
-        <p style="font-size:12px; color:#475569;">अपनी मासिक एक्सेल (.xlsx) फ़ाइल यहाँ अपलोड करें ताकि सभी न्यायालयों का डेटा एक बार में अपडेट हो सके।</p>
+        <h3>📁 एक्सेल फ़ाइल सिंक केंद्र (DATE WISE A & ACT WISE B)</h3>
+        <p style="font-size:12px; color:#475569;">अपनी मासिक एक्सेल (.xlsx) फ़ाइल यहाँ अपलोड करें। दोनों प्रारूपों का डेटा पूरी सटीकता के साथ सिंक हो जाएगा।</p>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="font-size: 13px; padding: 5px; background: #fff; border: 1px solid #94a3b8; border-radius: 4px;" onchange="inspectUploadedWorkbook()">
         <div id="sheetPickerArea" style="display:none; margin-top:12px; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;">
-          <select id="selSheetA" style="padding:5px; border-radius:4px; border:1px solid #94a3b8;"></select>
-          <select id="selSheetB" style="padding:5px; border-radius:4px; border:1px solid #94a3b8;"></select>
+          <div style="font-size:12px; font-weight:bold;">प्रारूप 'अ' शीट: <select id="selSheetA" style="padding:4px; border-radius:4px; border:1px solid #94a3b8;"></select></div>
+          <div style="font-size:12px; font-weight:bold;">प्रारूप 'ब' शीट: <select id="selSheetB" style="padding:4px; border-radius:4px; border:1px solid #94a3b8;"></select></div>
           <button class="btn btn-upload" onclick="executeExcelSync()">📥 डेटा सिंक करें ⚡</button>
         </div>
       </div>
@@ -172,7 +172,6 @@
   var currentTab = 'A';
   var parsedWorkbook = null;
 
-  // Complete Master Data A matching TEST.xlsx precisely
   var defaultMasterA = [
     { court: "कलेक्टर उत्तरकाशी", section: "धारा- 28 एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "कलेक्टर उत्तरकाशी", section: "धारा- 198(4) जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
@@ -183,46 +182,46 @@
     { court: "कलेक्टर उत्तरकाशी", section: "धारा- 72 आबकारी अधिनियम", open: 29, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "कलेक्टर उत्तरकाशी", section: "गुण्डा अधिनियम", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
 
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 71, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 33/39 एल०आर०ऐक्ट", open: 6, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 210 एल०आर०ऐक्ट", open: 17, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 41 अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पी०पी०ई०ऐक्ट", open: 28, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "जेड०ए०एल०आर०ऐक्ट:-अ-धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "ब-धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "स-धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "द-धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "य-धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 71, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "एल०आर०ऐक्ट:-अ-धारा 33/39 एल०आर०ऐक्ट", open: 6, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "ब-धारा 210 एल०आर०ऐक्ट", open: 17, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा-41 अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "अन्य वाद:-अ-पी०पी०ई०ऐक्ट", open: 28, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "भरण पोषण अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पंचायती राज अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "विवाह अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
 
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 8, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 36, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 33/39 एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 210 एल०आर०ऐक्ट", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 41 अधिनियम", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "पी०पी०ई०ऐक्ट", open: 10, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "जेड०ए०एल०आर०ऐक्ट:-अ-धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "ब-धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 8, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "स-धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "द-धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "य-धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 36, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "एल०आर०ऐक्ट:-अ-धारा 33/39 एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "ब-धारा 210 एल०आर०ऐक्ट", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा-41 अधिनियम", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "अन्य वाद:-अ-पी०पी०ई०ऐक्ट", open: 10, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
 
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 12, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 33/39 एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 210 एल०आर०ऐक्ट", open: 14, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 41 अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "पी०पी०ई०ऐक्ट", open: 15, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "जेड०ए०एल०आर०ऐक्ट:-अ-धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "ब-धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 12, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "स-धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "द-धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "य-धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "एल०आर०ऐक्ट:-अ-धारा 33/39 एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "ब-धारा 210 एल०आर०ऐक्ट", open: 14, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा-41 अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "अन्य वाद:-अ-पी०पी०ई०ऐक्ट", open: 15, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
 
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 18, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 33/39 एल०आर०ऐक्ट", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 210 एल०आर०ऐक्ट", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "पी०पी०ई०ऐक्ट", open: 6, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "जेड०ए०एल०आर०ऐक्ट:-अ-धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "ब-धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "द-धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "य-धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 18, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "एल०आर०ऐक्ट:-अ-धारा 33/39 एल०आर०ऐक्ट", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "ब-धारा 210 एल०आर०ऐक्ट", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "अन्य वाद:-अ-पी०पी०ई०ऐक्ट", open: 6, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
 
     { court: "तहसीलदार भटवाड़ी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 57, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "तहसीलदार भटवाड़ी", section: "धारा 33/39 एल०आर०ऐक्ट", open: 11, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
@@ -265,8 +264,8 @@
     storageA = JSON.parse(JSON.stringify(defaultMasterA));
     storageB = JSON.parse(JSON.stringify(defaultMasterB));
     try {
-      var a = localStorage.getItem('rajswa_unicode_fixed_A_v5');
-      var b = localStorage.getItem('rajswa_unicode_fixed_B_v5');
+      var a = localStorage.getItem('rajswa_v6_A');
+      var b = localStorage.getItem('rajswa_v6_B');
       if (a) storageA = JSON.parse(a);
       if (b) storageB = JSON.parse(b);
     } catch(e) {}
@@ -312,15 +311,20 @@
         selA.innerHTML = ''; selB.innerHTML = '';
 
         sheetNames.forEach(function(name) {
-          var optA = document.createElement('option'); optA.value = name; optA.textContent = "प्रारूप 'अ' शीट: " + name;
-          var optB = document.createElement('option'); optB.value = name; optB.textContent = "प्रारूप 'ब' शीट: " + name;
+          var optA = document.createElement('option'); optA.value = name; optA.textContent = name;
+          var optB = document.createElement('option'); optB.value = name; optB.textContent = name;
           selA.appendChild(optA);
           selB.appendChild(optB);
         });
 
-        if (sheetNames.length > 1) selB.selectedIndex = 1;
+        // Auto select correct sheets if named
+        for(var i=0; i<sheetNames.length; i++) {
+          if(sheetNames[i].includes('DATE WISE')) selA.selectedIndex = i;
+          if(sheetNames[i].includes('ACT WISE')) selB.selectedIndex = i;
+        }
+
         document.getElementById('sheetPickerArea').style.display = 'flex';
-        alert("एक्सेल फ़ाइल सफलतापूर्वक लोड हो गई है!");
+        alert("एक्सेल फ़ाइल सफलतापूर्वक लोड हो गई है! अब 'डेटा सिंक करें' बटन दबाएँ।");
       } catch (err) {
         alert("एक्सेल फ़ाइल पढ़ने में त्रुटि: " + err.message);
       }
@@ -335,64 +339,102 @@
     }
     var sheetAName = document.getElementById('selSheetA').value;
     var sheetBName = document.getElementById('selSheetB').value;
+
     try {
+      // 1. Parse Sheet A (DATE WISE A)
       var sheetA = parsedWorkbook.Sheets[sheetAName];
-      var sheetB = parsedWorkbook.Sheets[sheetBName];
       var jsonA = XLSX.utils.sheet_to_json(sheetA, { header: 1 });
-      var jsonB = XLSX.utils.sheet_to_json(sheetB, { header: 1 });
-      
       var newStorageA = [];
-      var currentCourt = "";
+      var currentCourtA = "";
 
       jsonA.forEach(function(row) {
         var col0 = row[0] ? String(row[0]).trim() : "";
         var col1 = row[1] ? String(row[1]).trim() : "";
         var col2 = row[2] ? String(row[2]).trim() : "";
 
-        if (col0 && !col0.includes('jktLo') && !col0.includes('ihBklhu') && !col0.includes('योग')) {
-          if (col0.includes('कलेक्टर') || col0.includes('dysDVj')) currentCourt = "कलेक्टर उत्तरकाशी";
-          else if (col0.includes('भटवाड़ी') && col0.includes('असिस्टेन्ट')) currentCourt = "असिस्टेन्ट कलेक्टर भटवाड़ी";
-          else if (col0.includes('डुण्डा') && col0.includes('असिस्टेट')) currentCourt = "असिस्टेट कलेक्टर, डुण्डा";
-          else if (col0.includes('बड़कोट') && col0.includes('असिस्टेट')) currentCourt = "असिस्टेट कलेक्टर, बड़कोट";
-          else if (col0.includes('पुरोला') && col0.includes('असिस्टेट')) currentCourt = "असिस्टेट कलेक्टर, पुरोला";
-          else if (col0.includes('भटवाड़ी') && col0.includes('तहसीलदार')) currentCourt = "तहसीलदार भटवाड़ी";
-          else if (col0.includes('डुण्डा') && col0.includes('तहसीलदार')) currentCourt = "तहसीलदार, डुण्डा";
-          else if (col0.includes('बड़कोट') && col0.includes('तहसीलदार')) currentCourt = "तहसीलदार, बड़कोट";
-          else if (col0.includes('पुरोला') && col0.includes('तहसीलदार')) currentCourt = "तहसीलदार, पुरोला";
-          else if (col0.includes('चिन्यालीसौड़')) currentCourt = "तहसीलदार, चिन्यालीसौड़";
-          else if (col0.includes('मोरी')) currentCourt = "तहसीलदार, मोरी";
-          else if (col0.includes('जोशियाड़ा')) currentCourt = "नायब तहसीलदार उप तह० जोशियाड़ा";
-          else if (col0.includes('धौन्तरी')) currentCourt = "नायब तहसीलदार (उप तह० धौन्तरी)";
+        if (col0 && !col0.includes('ihBklhu') && !col0.includes('jktLo') && !col0.includes('योग') && col0 !== 'nan') {
+          if (col0.includes('dysDVj') || col0.includes('कलेक्टर')) currentCourtA = "कलेक्टर उत्तरकाशी";
+          else if (col0.includes('HkVokM+h') || col0.includes('भटवाड़ी')) currentCourtA = "असिस्टेन्ट कलेक्टर भटवाड़ी";
+          else if (col0.includes('Mq.Mk') || col0.includes('डुण्डा')) currentCourtA = "असिस्टेट कलेक्टर, डुण्डा";
+          else if (col0.includes('cM+dksV') || col0.includes('बड़कोट')) currentCourtA = "असिस्टेट कलेक्टर, बड़कोट";
+          else if (col0.includes('iqqjksyk') || col0.includes('पुरोला')) currentCourtA = "असिस्टेट कलेक्टर, पुरोला";
+          else if (col0.includes('rglhynkj HkVokM+h')) currentCourtA = "तहसीलदार भटवाड़ी";
+          else if (col0.includes('rglhynkj') && col0.includes('Mq.Mk')) currentCourtA = "तहसीलदार, डुण्डा";
+          else if (col0.includes('rglhynkj') && col0.includes('cM+dksV')) currentCourtA = "तहसीलदार, बड़कोट";
+          else if (col0.includes('rglhynkj') && col0.includes('iqjksyk')) currentCourtA = "तहसीलदार, पुरोला";
+          else if (col0.includes('fpU;kyhlkSM+') || col0.includes('चिन्यालीसौड़')) currentCourtA = "तहसीलदार, चिन्यालीसौड़";
+          else if (col0.includes('eksjh') || col0.includes('मोरी')) currentCourtA = "तहसीलदार, मोरी";
+          else if (col0.includes('tksf'k;kM+k') || col0.includes('जोशियाड़ा')) currentCourtA = "नायब तहसीलदार उप तह० जोशियाड़ा";
+          else if (col0.includes('/kkSUrjh') || col0.includes('धौन्तरी')) currentCourtA = "नायब तहसीलदार (उप तह० धौन्तरी)";
         }
 
-        if (!isNaN(col1) && col1 !== "" && col2 !== "") {
-          var openVal = parseInt(row[3]) || 0;
-          var instVal = parseInt(row[4]) || 0;
-          var dispVal = parseInt(row[6]) || 0;
-          var m6 = parseInt(row[8]) || 0;
-          var y1 = parseInt(row[9]) || 0;
-          var y3 = parseInt(row[10]) || 0;
-          var y5 = parseInt(row[11]) || 0;
-
-          if (currentCourt) {
-            newStorageA.push({
-              court: currentCourt,
-              section: col2,
-              open: openVal,
-              inst: instVal,
-              dispTot: dispVal,
-              m6: m6, y1: y1, y3: y3, y5: y5
-            });
-          }
+        if (!isNaN(col1) && col1 !== "" && col2 !== "" && col2 !== 'nan' && currentCourtA) {
+          newStorageA.push({
+            court: currentCourtA,
+            section: col2,
+            open: parseInt(row[3]) || 0,
+            inst: parseInt(row[4]) || 0,
+            dispTot: parseInt(row[6]) || 0,
+            m6: parseInt(row[8]) || 0,
+            y1: parseInt(row[9]) || 0,
+            y3: parseInt(row[10]) || 0,
+            y5: parseInt(row[11]) || 0
+          });
         }
       });
 
-      if (newStorageA.length > 0) {
-        storageA = newStorageA;
-      }
+      if (newStorageA.length > 0) storageA = newStorageA;
+
+      // 2. Parse Sheet B (ACT WISE B)
+      var sheetB = parsedWorkbook.Sheets[sheetBName];
+      var jsonB = XLSX.utils.sheet_to_json(sheetB, { header: 1 });
+      var newStorageB = [];
+      var currentCourtB = "";
+
+      jsonB.forEach(function(row) {
+        var col0 = row[0] ? String(row[0]).trim() : "";
+        var col1 = row[1] ? String(row[1]).trim() : "";
+        var col2 = row[2] ? String(row[2]).trim() : "";
+
+        if (col0 && !col0.includes('ihBklhu') && !col0.includes('jktLo') && !col0.includes('योग') && col0 !== 'nan') {
+          if (col0.includes('dysDVj') || col0.includes('कलेक्टर')) currentCourtB = "कलेक्टर उत्तरकाशी";
+          else if (col0.includes('HkVokM+h') || col0.includes('भटवाड़ी')) currentCourtB = "असिस्टेन्ट कलेक्टर भटवाड़ी";
+          else if (col0.includes('Mq.Mk') || col0.includes('डुण्डा')) currentCourtB = "असिस्टेट कलेक्टर, डुण्डा";
+          else if (col0.includes('cM+dksV') || col0.includes('बड़कोट')) currentCourtB = "असिस्टेट कलेक्टर, बड़कोट";
+          else if (col0.includes('iqqjksyk') || col0.includes('पुरोला')) currentCourtB = "असिस्टेट कलेक्टर, पुरोला";
+          else if (col0.includes('rglhynkj HkVokM+h')) currentCourtB = "तहसीलदार भटवाड़ी";
+          else if (col0.includes('rglhynkj') && col0.includes('Mq.Mk')) currentCourtB = "तहसीलदार, डुण्डा";
+          else if (col0.includes('rglhynkj') && col0.includes('cM+dksV')) currentCourtB = "तहसीलदार, बड़कोट";
+          else if (col0.includes('rglhynkj') && col0.includes('iqjksyk')) currentCourtB = "तहसीलदार, पुरोला";
+          else if (col0.includes('fpU;kyhlkSM+') || col0.includes('चिन्यालीसौड़')) currentCourtB = "तहसीलदार, चिन्यालीसौड़";
+          else if (col0.includes('eksjh') || col0.includes('मोरी')) currentCourtB = "तहसीलदार, मोरी";
+          else if (col0.includes('tksf'k;kM+k') || col0.includes('जोशियाड़ा')) currentCourtB = "नायब तहसीलदार उप तह० जोशियाड़ा";
+          else if (col0.includes('/kkSUrjh') || col0.includes('धौन्तरी')) currentCourtB = "नायब तहसीलदार (उप तह० धौन्तरी)";
+        }
+
+        if (!isNaN(col1) && col1 !== "" && col2 !== "" && col2 !== 'nan' && currentCourtB) {
+          newStorageB.push({
+            court: currentCourtB,
+            section: col2,
+            open: parseInt(row[3]) || 0,
+            instNew: parseInt(row[4]) || 0,
+            instRest: parseInt(row[5]) || 0,
+            instTrans: parseInt(row[6]) || 0,
+            dispAdam: parseInt(row[9]) || 0,
+            dispTrans: parseInt(row[10]) || 0,
+            dispGun: parseInt(row[11]) || 0,
+            m6: parseInt(row[14]) || 0,
+            y1: parseInt(row[15]) || 0,
+            y3: parseInt(row[16]) || 0,
+            y5: parseInt(row[17]) || 0
+          });
+        }
+      });
+
+      if (newStorageB.length > 0) storageB = newStorageB;
 
       saveToLocalStorage();
-      alert("एक्सेल डेटा प्रारूप 'अ' एवं 'ब' सफलतापूर्वक सिंक हो गया है!");
+      alert("एक्सेल फ़ाइल का डेटा (प्रारूप 'अ' एवं 'ब') पूरी तरह से सफलतापूर्वक सिंक हो गया है!");
       switchTab('A');
     } catch(err) {
       alert("सिंक करने में त्रुटि: " + err.message);
@@ -601,8 +643,8 @@
   }
 
   function saveToLocalStorage() {
-    localStorage.setItem('rajswa_unicode_fixed_A_v5', JSON.stringify(storageA));
-    localStorage.setItem('rajswa_unicode_fixed_B_v5', JSON.stringify(storageB));
+    localStorage.setItem('rajswa_v6_A', JSON.stringify(storageA));
+    localStorage.setItem('rajswa_v6_B', JSON.stringify(storageB));
   }
 
   function downloadBackup() {
@@ -620,8 +662,8 @@
 
   function hardResetData() {
     if (confirm("क्या आप निश्चित रूप से डिफ़ॉल्ट डेटा रीसेट करना चाहते हैं?")) {
-      localStorage.removeItem('rajswa_unicode_fixed_A_v5');
-      localStorage.removeItem('rajswa_unicode_fixed_B_v5');
+      localStorage.removeItem('rajswa_v6_A');
+      localStorage.removeItem('rajswa_v6_B');
       storageA = JSON.parse(JSON.stringify(defaultMasterA));
       storageB = JSON.parse(JSON.stringify(defaultMasterB));
       saveToLocalStorage();
