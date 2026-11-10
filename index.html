@@ -9,18 +9,18 @@
     :root {
       --primary: #1e3a8a;
       --secondary: #0d9488;
+      --accent: #b45309;
       --border-color: #475569;
       --th-bg: #e2e8f0;
       --grandtotal-bg: #fef08a;
     }
     * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-    body { background-color: #f8fafc; margin: 0; padding: 12px; color: #000; pointer-events: auto !important; }
+    body { background-color: #f8fafc; margin: 0; padding: 12px; color: #000; }
     .container { max-width: 1540px; margin: 0 auto; background: #fff; padding: 18px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     
     .tab-bar { display: flex; gap: 8px; border-bottom: 2px solid var(--primary); margin-bottom: 12px; flex-wrap: wrap; }
     .tab-btn { padding: 9px 18px; font-size: 13.5px; font-weight: bold; border: none; border-radius: 6px 6px 0 0; cursor: pointer; background: #cbd5e1; color: #1e293b; transition: 0.2s; }
     .tab-btn.active { background: var(--primary); color: #fff; }
-    .tab-btn.upload-tab { background: #0284c7; color: #fff; }
 
     .header-box { text-align: center; margin-bottom: 12px; }
     .header-box h2 { margin: 0; font-size: 19px; color: #0f172a; text-decoration: underline; }
@@ -31,7 +31,7 @@
     .entry-panel { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; margin-bottom: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap: 8px; }
     .field { display: flex; flex-direction: column; }
     .field label { font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #334155; }
-    .field input, .field select { padding: 5px 6px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 12px; background: #fff; }
+    .field input, .field select { padding: 5px 6px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 12px; }
     .field input[readonly], .field input.locked-field { background-color: #fee2e2; border-color: #fca5a5; color: #991b1b; font-weight: bold; cursor: not-allowed; }
 
     .btn-actions { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
@@ -40,9 +40,7 @@
     .btn-csv { background: var(--secondary); color: #fff; }
     .btn-print { background: #334155; color: #fff; }
     .btn-reset { background: #dc2626; color: #fff; }
-
-    .upload-card { background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 15px; text-align: center; }
-    .upload-card h3 { margin-top: 0; color: #1e3a8a; }
+    .btn-default-upload { background: #4338ca; color: #fff; }
 
     .table-container { overflow-x: auto; margin-top: 10px; }
     table.report-table { width: 100%; border-collapse: collapse; font-size: 10.5px; text-align: center; }
@@ -55,27 +53,63 @@
 
     .signature-section { display: flex; justify-content: flex-end; margin-top: 35px; padding-right: 40px; text-align: center; font-size: 13px; font-weight: bold; }
 
-    @media print {
-      .no-print { display: none !important; }
-      body { padding: 0; background: #fff; }
-      .container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
-      table.report-table th, table.report-table td { border: 1px solid #000; }
-      @page { size: landscape; margin: 6mm; }
-    }
+    #loginModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 15px; }
+    .login-card { background: #fff; width: 100%; max-width: 440px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); padding: 24px; text-align: center; }
+    .login-card select, .login-card input { width: 100%; padding: 8px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 4px; margin-bottom: 12px; }
+    .login-card button { width: 100%; padding: 10px; background: #1e3a8a; color: #fff; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body class="notranslate">
 
+  <!-- LOGIN MODAL -->
+  <div id="loginModal">
+    <div class="login-card notranslate">
+      <h2 style="margin-top: 0; color: #1e3a8a; font-size: 20px;">🏛️ राजस्व वाद पोर्टल - लॉगिन</h2>
+      <p style="font-size: 13px; color: #475569; margin-bottom: 20px;">कृपया अपनी ऑपरेटर आईडी या एडमिन क्रेडेंशियल दर्ज करें।</p>
+      
+      <div style="text-align: left; margin-bottom: 12px;">
+        <label style="font-size: 12px; font-weight: bold; color: #334155; display: block; margin-bottom: 4px;">लॉगिन भूमिका / न्यायालय:</label>
+        <select id="loginRole">
+          <option value="admin">🔒 जिला कार्यालय / एडमिन (पूर्ण नियंत्रण)</option>
+          <option value="कलेक्टर उत्तरकाशी">कलेक्टर उत्तरकाशी</option>
+          <option value="असिस्टेन्ट कलेक्टर भटवाड़ी">असिस्टेन्ट कलेक्टर भटवाड़ी</option>
+          <option value="असिस्टेट कलेक्टर, डुण्डा">असिस्टेट कलेक्टर, डुण्डा</option>
+          <option value="असिस्टेट कलेक्टर, बड़कोट">असिस्टेट कलेक्टर, बड़कोट</option>
+          <option value="असिस्टेट कलेक्टर, पुरोला">असिस्टेट कलेक्टर, पुरोला</option>
+          <option value="तहसीलदार भटवाड़ी">तहसीलदार भटवाड़ी</option>
+          <option value="तहसीलदार, डुण्डा">तहसीलदार, डुण्डा</option>
+          <option value="तहसीलदार, बड़कोट">तहसीलदार, बड़कोट</option>
+          <option value="तहसीलदार, पुरोला">तहसीलदार, पुरोला</option>
+          <option value="तहसीलदार, चिन्यालीसौड़">तहसीलदार, चिन्यालीसौड़</option>
+          <option value="तहसीलदार, मोरी">तहसीलदार, मोरी</option>
+          <option value="नायब तहसीलदार उप तह० जोशियाड़ा">नायब तहसीलदार उप तह० जोशियाड़ा</option>
+          <option value="नायब तहसीलदार (उप तह० धौन्तरी)">नायब तहसीलदार (उप तह० धौन्तरी)</option>
+        </select>
+      </div>
+
+      <div style="text-align: left; margin-bottom: 20px;">
+        <label style="font-size: 12px; font-weight: bold; color: #334155; display: block; margin-bottom: 4px;">पासवर्ड:</label>
+        <input type="password" id="loginPassword" placeholder="पासवर्ड दर्ज करें (डिफ़ॉल्ट: pass123)">
+      </div>
+
+      <button onclick="handleLogin()">सुरक्षित लॉगिन करें 🔓</button>
+      <div id="loginError" style="color: #dc2626; font-size: 12px; margin-top: 10px; display: none;"></div>
+      <div style="margin-top: 15px; font-size: 11.5px; color: #64748b; background: #f1f5f9; padding: 8px; border-radius: 4px;">
+        💡 एडमिन पासवर्ड: <code>admin123</code> | ऑपरेटर पासवर्ड: <code>pass123</code>
+      </div>
+    </div>
+  </div>
+
   <div class="container notranslate">
-    <div style="display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 6px 12px; border-radius: 4px; margin-bottom: 10px; font-size: 12px; border: 1px solid #bae6fd;">
-      <span>🏛️ <strong>राजस्व वाद प्रबंधन पोर्टल:</strong> जिला कार्यालय, उत्तरकाशी (मास्टर कंट्रोल मोड)</span>
+    <div id="userSessionBox" style="display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 6px 12px; border-radius: 4px; margin-bottom: 10px; font-size: 12px; border: 1px solid #bae6fd;">
+      <span>👤 <strong>लॉगिन उपयोगकर्ता:</strong> <span id="currentLoggedInUser">एडमिन</span></span>
+      <button onclick="handleLogout()" style="background: #dc2626; color: #fff; border: none; padding: 3px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold;">लॉगआउट 🔒</button>
     </div>
 
     <div class="tab-bar">
-      <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">प्रारूप 'अ' (दिनांकवार विवरण)</button>
-      <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">प्रारूप 'ब' (अधिनियम/धारावार)</button>
-      <button class="tab-btn upload-tab" id="btnTabUpload" onclick="switchTab('UPLOAD')">📂 एक्सेल डेटा अपलोड केंद्र</button>
+      <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">प्रारूप 'अ' (मासिक विवरण पत्र - दिनांकवार)</button>
+      <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">प्रारूप 'ब' (मासिक विवरण पत्र - सामान्य)</button>
     </div>
 
     <div class="header-box">
@@ -84,24 +118,12 @@
     </div>
 
     <div class="notice-box">
-      <span style="font-weight: 600; color: #166534;">🟢 <strong>डेटा सक्रिय और सुरक्षित है</strong></span>
-      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-        <button class="btn btn-csv" onclick="downloadBackup()" style="background:#0f766e; color:#fff;">💾 बैकअप डाउनलोड करें</button>
+      <span id="saveStatusBadge" style="font-weight: 600; color: #166534;">🟢 <strong>डाटा स्वतः सुरक्षित (Auto-Saved)</strong></span>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="adminActionsArea">
+        <input type="file" id="pdfFileInput" accept="application/pdf" style="display: none;" onchange="handlePDFUpload(event)">
+        <button class="btn btn-default-upload" onclick="document.getElementById('pdfFileInput').click()" title="भविष्य के संशोधन हेतु PDF अपलोड करें (Default Button)">📄 डिफ़ॉल्ट PDF अपलोड (Correction)</button>
+        <button class="btn btn-csv" onclick="downloadBackup()" style="background:#0f766e; color:#fff;">💾 बैकअप डाउनलोड</button>
         <button class="btn btn-reset" onclick="hardResetData()" style="background:#b91c1c; color:#fff;">🔄 डिफ़ॉल्ट रीसेट</button>
-      </div>
-    </div>
-
-    <!-- EXCEL UPLOAD VIEW PANEL -->
-    <div id="uploadViewPanel" class="no-print" style="display:none;">
-      <div class="upload-card">
-        <h3>📁 एक्सेल फ़ाइल सिंक केंद्र</h3>
-        <p style="font-size:12px; color:#475569;">अपनी मासिक एक्सेल (.xlsx) फ़ाइल यहाँ अपलोड करें।</p>
-        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="font-size: 13px; padding: 5px; background: #fff; border: 1px solid #94a3b8; border-radius: 4px;" onchange="inspectUploadedWorkbook()">
-        <div id="sheetPickerArea" style="display:none; margin-top:12px; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;">
-          <div style="font-size:12px; font-weight:bold;">प्रारूप 'अ' शीट: <select id="selSheetA" style="padding:4px; border-radius:4px; border:1px solid #94a3b8;"></select></div>
-          <div style="font-size:12px; font-weight:bold;">प्रारूप 'ब' शीट: <select id="selSheetB" style="padding:4px; border-radius:4px; border:1px solid #94a3b8;"></select></div>
-          <button class="btn btn-upload" onclick="executeExcelSync()" style="background:#0284c7; color:#fff; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">📥 डेटा सिंक करें ⚡</button>
-        </div>
       </div>
     </div>
 
@@ -154,7 +176,7 @@
       </div>
     </div>
 
-    <div class="table-container" id="reportTableContainer">
+    <div class="table-container">
       <table class="report-table" id="reportTable">
         <thead id="tableHead"></thead>
         <tbody id="tableBody"></tbody>
@@ -162,278 +184,290 @@
       </table>
     </div>
 
-    <div class="signature-section" id="signatureBlock">
+    <div class="signature-section">
       <div>प्रभारी अधिकारी,<br>कृते-जिलाधिकारी,<br>उत्तरकाशी।</div>
     </div>
   </div>
 
 <script>
   var currentTab = 'A';
-  var parsedWorkbook = null;
+  var currentUser = { role: 'admin', name: 'जिला कार्यालय (एडमिन)' };
 
+  // EXACT AUTHORITATIVE DEFAULT DATA FOR PRAROOP A (OCTOBER 2026)
   var defaultMasterA = [
-    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 28 एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 198(4) जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "कलेक्टर उत्तरकाशी", section: "पट्टा निरस्तीकरण/शुद्धिकरण", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 219 एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 40/41 एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 192 एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "कलेक्टर उत्तरकाशी", section: "धारा- 72 आबकारी अधिनियम", open: 29, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "कलेक्टर उत्तरकाशी", section: "गुण्डा अधिनियम", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    // 1. कलेक्टर उत्तरकाशी
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा 28 एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा 198 (4) जेड०ए०एल०आर० ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा 219 एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा 40/41 एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा-192 एल०आर०ऐक्ट", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा 72 आबकारी अधिनियम", open: 17, inst: 1, dispTot: 1, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "गुण्डा अधिनियम", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
 
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 71, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 33/39 एल०आर०ऐक्ट", open: 6, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 210 एल०आर०ऐक्ट", open: 17, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 41 अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पी०पी०ई०ऐक्ट", open: 28, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "भरण पोषण अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पंचायती राज अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    // 2. असिस्टेन्ट कलेक्टर भटवाड़ी
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "जेड०ए०एल०आर०ऐक्ट:-अ-229बी", open: 67, inst: 1, dispTot: 3, m6: 0, y1: 61, y3: 4, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "ब-धारा 176", open: 7, inst: 0, dispTot: 3, m6: 0, y1: 6, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "स-धारा 209", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 3, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "द-धारा 161", open: 1, inst: 4, dispTot: 1, m6: 0, y1: 5, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "य-धारा 143", open: 12, inst: 5, dispTot: 4, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "र-धारा 210", open: 15, inst: 0, dispTot: 3, m6: 0, y1: 14, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "ल-धारा 41", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "व-धारा 33/39", open: 7, inst: 0, dispTot: 3, m6: 0, y1: 4, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 4/5 पी०पी०ई० एक्ट", open: 33, inst: 2, dispTot: 0, m6: 0, y1: 33, y3: 2, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "मजदूरी भुगतान अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "इजरायवाद", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "स्टाम्प एक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पंचायत राज एक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "विविध वाद 157-क", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "विवाह अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 166/167 एल०आर०", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 166/167 एल.आर.", open: 5, inst: 0, dispTot: 1, m6: 0, y1: 4, y3: 0, y5: 0 },
 
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 36, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 33/39 एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 210 एल०आर०ऐक्ट", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 41 अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "पी०पी०ई०ऐक्ट", open: 22, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "मजदूरी भुगतान अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "बटाई वाद", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "पट्टा निरस्तीकरण", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    // 3. असिस्टेट कलेक्टर, डुण्डा
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "जेड०ए०एल०आर०ऐक्ट:-अ-229बी", open: 27, inst: 0, dispTot: 3, m6: 10, y1: 12, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "ब-धारा 176", open: 14, inst: 0, dispTot: 0, m6: 3, y1: 2, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "स-धारा 209", open: 3, inst: 0, dispTot: 0, m6: 1, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "द-धारा 161", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "य-धारा 143", open: 0, inst: 4, dispTot: 4, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "र-धारा 210", open: 6, inst: 0, dispTot: 0, m6: 4, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "ल-धारा 41", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "व-धारा 33/39", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 4/5 पी०पी०ई० एक्ट", open: 22, inst: 0, dispTot: 0, m6: 20, y1: 1, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "मजदूरी भुगतान अधिनियम", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "इजरायवाद", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "स्टाम्प एक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "पंचायत राज एक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "विविध वाद 157-क", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "असिस्टेट कलेक्टर, डुण्डा", section: "विवाह अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
 
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 48, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 30, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 11, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 33/39 एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 210 एल०आर०ऐक्ट", open: 17, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 41 अधिनियम", open: 7, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "पी०पी०ई०ऐक्ट", open: 38, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    // 4. असिस्टेट कलेक्टर, बड़कोट
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "जेड०ए०एल०आर०ऐक्ट:-अ-229बी", open: 30, inst: 1, dispTot: 2, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "ब-धारा 176", open: 23, inst: 1, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "स-धारा 209", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "द-धारा 161", open: 3, inst: 1, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "य-धारा 143", open: 37, inst: 6, dispTot: 14, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "र-धारा 210", open: 14, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "ल-धारा 41", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "व-धारा 33/39", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 4/5 पी०पी०ई० एक्ट", open: 34, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "असिस्टेट कलेक्टर, बड़कोट", section: "मजदूरी भुगतान अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "बटाई वाद", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "पट्टा निरस्तीकरण", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "विविध वाद/157क", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "विवाह वाद", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "इजरायवाद", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "स्टाम्प एक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "पंचायत राज एक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "विविध वाद 157-क", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "विवाह अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
 
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 143 जेड०ए०एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 176 जेड०ए०एल०आर०ऐक्ट", open: 37, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 161 जेड०ए०एल०आर०ऐक्ट", open: 2, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 209 जेड०ए०एल०आर०ऐक्ट", open: 8, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 229बी जेड०ए०एल०आर०ऐक्ट", open: 30, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 198क", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 166, 167", open: 11, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 33/39", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 210 एल०आर०ऐक्ट", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 41 अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "पी०पी०ई०ऐक्ट", open: 16, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    // 5. असिस्टेट कलेक्टर, पुरोला
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "जेड०ए०एल०आर०ऐक्ट:-अ-229बी", open: 30, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "ब-धारा 176", open: 30, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "स-धारा 209", open: 3, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "द-धारा 161", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "य-धारा 143", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "र-धारा 210", open: 4, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "ल-धारा 41", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "व-धारा 33/39", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 4/5 पी०पी०ई० एक्ट", open: 10, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
     { court: "असिस्टेट कलेक्टर, पुरोला", section: "मजदूरी भुगतान अधिनियम", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "असिस्टेट कलेक्टर, पुरोला", section: "विवाह वाद", open: 6, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "इजरायवाद", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "स्टाम्प एक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "पंचायत राज एक्ट", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "विविध वाद 157-क", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 0, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "विवाह अधिनियम", open: 14, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "198 क", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "166, 167 जेड.ए.", open: 5, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
 
-    { court: "तहसीलदार भटवाड़ी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 57, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "तहसीलदार, डुण्डा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 33, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "तहसीलदार, बड़कोट", section: "धारा 34/35 एल०आर०ऐक्ट", open: 29, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "तहसीलदार, पुरोला", section: "धारा 34/35 एल०आर०ऐक्ट", open: 22, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "तहसीलदार, चिन्यालीसौड़", section: "धारा 34/35 एल०आर०ऐक्ट", open: 26, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "तहसीलदार, मोरी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 9, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "नायब तहसीलदार उप तह० जोशियाड़ा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 118, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
-    { court: "नायब तहसीलदार (उप तह० धौन्तरी)", section: "धारा 34/35 एल०आर०ऐक्ट", open: 1, inst: 0, dispTot: 0, m6: 0, y1: 0, y3: 0, y5: 0 }
+    // 6. तहसीलदार एवं नायब तहसीलदार न्यायालय
+    { court: "तहसीलदार भटवाड़ी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 130, inst: 0, dispTot: 40, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, डुण्डा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 76, inst: 39, dispTot: 3, m6: 6, y1: 2, y3: 0, y5: 0 },
+    { court: "तहसीलदार, बड़कोट", section: "धारा 34/35 एल०आर०ऐक्ट", open: 47, inst: 61, dispTot: 12, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, पुरोला", section: "धारा 34/35 एल०आर०ऐक्ट", open: 148, inst: 9, dispTot: 10, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, चिन्यालीसौड़", section: "धारा 34/35 एल०आर०ऐक्ट", open: 73, inst: 27, dispTot: 36, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, मोरी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 48, inst: 21, dispTot: 13, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "नायब तहसीलदार उप तह० जोशियाड़ा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 89, inst: 28, dispTot: 9, m6: 4, y1: 14, y3: 1, y5: 0 },
+    { court: "नायब तहसीलदार (उप तह० धौन्तरी)", section: "धारा 34/35 एल०आर०ऐक्ट", open: 8, inst: 0, dispTot: 5, m6: 0, y1: 0, y3: 0, y5: 0 }
   ];
 
-  var defaultMasterB = JSON.parse(JSON.stringify(defaultMasterA));
-  defaultMasterB.forEach(function(r) {
-    r.instNew = 0; r.instRest = 0; r.instTrans = 0; r.instTot = 0;
-    r.dispAdam = 0; r.dispTrans = 0; r.dispGun = 0;
-  });
+  // EXACT AUTHORITATIVE DEFAULT DATA FOR PRAROOP B (OCTOBER 2026) - PRESERVED AS SUBMITTED
+  var defaultMasterB = [
+    // 1. कलेक्टर उत्तरकाशी
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा 28 एल०आर०ऐक्ट", open: 2, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 1, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा 198(4) जेड०ए०एल०आर० ऐक्ट", open: 3, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 1, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 1, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा 219 एल०आर० ऐक्ट", open: 1, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा 40/41 एल०आर०ऐक्ट", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा-192 एल०आर०एक्ट", open: 4, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "धारा-72 आबकारी अधिनियम", open: 17, instNew: 1, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 1, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "कलेक्टर उत्तरकाशी", section: "गुण्डा अधिनियम", open: 2, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    // 2. असिस्टेन्ट कलेक्टर भटवाड़ी
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "जेड०ए०एल०आर०ऐक्ट:-अ-229बी", open: 67, instNew: 1, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 4, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "ब-धारा 176", open: 7, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 3, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "स-धारा 209", open: 3, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "द-धारा 161", open: 1, instNew: 4, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 1, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "य-धारा 143", open: 12, instNew: 5, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 4, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "र-धारा 210", open: 15, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 3, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "ल-धारा 41", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "व-धारा 33/39", open: 7, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 3, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 4/5 पी०पी०ई० एक्ट", open: 33, instNew: 2, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "मजदूरी भुगतान अधिनियम", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "इजरायवाद", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "स्टाम्प एक्ट", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पंचायत राज एक्ट", open: 1, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "विविध वाद 157-क", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "विवाह अधिनियम", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेन्ट कलेक्टर भटवाड़ी", section: "धारा 166/167 एल.आर.", open: 5, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 1, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    // 3. असिस्टेट कलेक्टर, डुण्डा
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "जेड०ए०एल०आर०ऐक्ट:-अ-229बी", open: 27, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 3, m6: 10, y1: 12, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "ब-धारा 176", open: 14, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 3, y1: 2, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "स-धारा 209", open: 3, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 1, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "द-धारा 161", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "य-धारा 143", open: 0, instNew: 4, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 4, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "र-धारा 210", open: 6, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 4, y1: 1, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "ल-धारा 41", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "व-धारा 33/39", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "धारा 4/5 पी०पी०ई० एक्ट", open: 22, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 20, y1: 1, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "मजदूरी भुगतान अधिनियम", open: 1, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "इजरायवाद", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "स्टाम्प एक्ट", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "पंचायत राज एक्ट", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "विविध वाद 157-क", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, डुण्डा", section: "विवाह अधिनियम", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    // 4. असिस्टेट कलेक्टर, बड़कोट
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "जेड०ए०एल०आर०ऐक्ट:-अ-229बी", open: 30, instNew: 1, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 2, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "ब-धारा 176", open: 23, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "स-धारा 209", open: 2, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "द-धारा 161", open: 3, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "य-धारा 143", open: 37, instNew: 6, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 14, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "र-धारा 210", open: 14, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "ल-धारा 41", open: 0, instNew: 2, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "व-धारा 33/39", open: 1, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "धारा 4/5 पी०पी०ई० एक्ट", open: 34, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "मजदूरी भुगतान अधिनियम", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "इजरायवाद", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "स्टाम्प एक्ट", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "पंचायत राज एक्ट", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "विविध वाद 157-क", open: 2, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, बड़कोट", section: "विवाह अधिनियम", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    // 5. असिस्टेट कलेक्टर, पुरोला
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "जेड०ए०एल०आर०ऐक्ट:-अ-229बी", open: 30, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "ब-धारा 176", open: 30, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "स-धारा 209", open: 3, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "द-धारा 161", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "य-धारा 143", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "र-धारा 210", open: 4, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "ल-धारा 41", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "व-धारा 33/39", open: 1, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "धारा 4/5 पी०पी०ई० एक्ट", open: 11, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "मजदूरी भुगतान अधिनियम", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "इजरायवाद", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "स्टाम्प एक्ट", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "पंचायत राज एक्ट", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "विविध वाद 157-क", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "पट्टा निस्तीकरण/शुद्धिकरण", open: 0, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "विवाह अधिनियम", open: 14, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "198 क", open: 1, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "असिस्टेट कलेक्टर, पुरोला", section: "166, 167 जेड.ए.", open: 5, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 0, m6: 0, y1: 0, y3: 0, y5: 0 },
+
+    // 6. तहसीलदार एवं नायब तहसीलदार न्यायालय
+    { court: "तहसीलदार भटवाड़ी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 130, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 40, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, डुण्डा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 76, instNew: 39, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 2, m6: 6, y1: 2, y3: 0, y5: 0 },
+    { court: "तहसीलदार, बड़कोट", section: "धारा 34/35 एल०आर०ऐक्ट", open: 47, instNew: 61, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 12, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, पुरोला", section: "धारा 34/35 एल०आर०ऐक्ट", open: 148, instNew: 9, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 10, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, चिन्यालीसौड़", section: "धारा 34/35 एल०आर०ऐक्ट", open: 73, instNew: 27, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 36, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "तहसीलदार, मोरी", section: "धारा 34/35 एल०आर०ऐक्ट", open: 48, instNew: 21, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 13, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "नायब तहसीलदार उप तह० जोशियाड़ा", section: "धारा 34/35 एल०आर०ऐक्ट", open: 88, instNew: 28, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 9, m6: 0, y1: 0, y3: 0, y5: 0 },
+    { court: "नायब तहसीलदार (उप तह० धौन्तरी)", section: "धारा 34/35 एल०आर०ऐक्ट", open: 8, instNew: 0, instRest: 0, instTrans: 0, dispAdam: 0, dispTrans: 0, dispGun: 5, m6: 4, y1: 14, y3: 1, y5: 0 }
+  ];
 
   var storageA = [];
   var storageB = [];
 
+  // Versioned keys to ensure fresh authoritative data is loaded initially
+  var STORAGE_KEY_A = 'rajswa_portal_v2_A';
+  var STORAGE_KEY_B = 'rajswa_portal_v2_B';
+
   function initData() {
-    storageA = JSON.parse(JSON.stringify(defaultMasterA));
-    storageB = JSON.parse(JSON.stringify(defaultMasterB));
     try {
-      var a = localStorage.getItem('rajswa_v9_A');
-      var b = localStorage.getItem('rajswa_v9_B');
+      var a = localStorage.getItem(STORAGE_KEY_A);
+      var b = localStorage.getItem(STORAGE_KEY_B);
       if (a) storageA = JSON.parse(a);
       if (b) storageB = JSON.parse(b);
     } catch(e) {}
+
+    if (!storageA || storageA.length === 0) storageA = JSON.parse(JSON.stringify(defaultMasterA));
+    if (!storageB || storageB.length === 0) storageB = JSON.parse(JSON.stringify(defaultMasterB));
+  }
+
+  function handleLogin() {
+    var roleSel = document.getElementById('loginRole').value;
+    var pass = document.getElementById('loginPassword').value.trim();
+    var expectedPass = (roleSel === 'admin') ? 'admin123' : 'pass123';
+
+    if (pass !== expectedPass) {
+      var errBox = document.getElementById('loginError');
+      errBox.style.display = 'block';
+      errBox.textContent = "गलत पासवर्ड! कृपया सही पासवर्ड दर्ज करें। (डिफ़ॉल्ट: pass123, एडमिन: admin123)";
+      return;
+    }
+
+    document.getElementById('loginError').style.display = 'none';
+    currentUser.role = roleSel;
+    currentUser.name = (roleSel === 'admin') ? 'जिला कार्यालय (एडमिन - पूर्ण नियंत्रण)' : roleSel;
+
+    localStorage.setItem('rajswa_current_user', JSON.stringify(currentUser));
+    document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('loginPassword').value = '';
+    
+    applyRolePermissions();
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('rajswa_current_user');
+    document.getElementById('loginModal').style.display = 'flex';
+  }
+
+  function applyRolePermissions() {
+    document.getElementById('currentLoggedInUser').textContent = currentUser.name;
+    var courtSelect = document.getElementById('courtSelect');
+    var adminArea = document.getElementById('adminActionsArea');
+
+    if (currentUser.role === 'admin') {
+      courtSelect.disabled = false;
+      if (adminArea) adminArea.style.display = 'flex';
+    } else {
+      courtSelect.value = currentUser.role;
+      courtSelect.disabled = true;
+      if (adminArea) adminArea.style.display = 'none';
+    }
+
+    syncSectionDropdown();
+    renderTable();
   }
 
   function switchTab(tab) {
     currentTab = tab;
     document.getElementById('btnTabA').className = (tab === 'A') ? 'tab-btn active' : 'tab-btn';
     document.getElementById('btnTabB').className = (tab === 'B') ? 'tab-btn active' : 'tab-btn';
-    document.getElementById('btnTabUpload').className = (tab === 'UPLOAD') ? 'tab-btn upload-tab active' : 'tab-btn upload-tab';
+    document.getElementById('mainHeading').textContent = (tab === 'A') ? "प्रारूप 'अ'" : "प्रारूप 'ब'";
 
-    document.getElementById('uploadViewPanel').style.display = (tab === 'UPLOAD') ? 'block' : 'none';
-    document.getElementById('manualEditPanel').style.display = (tab === 'UPLOAD') ? 'none' : 'grid';
-    document.getElementById('reportTableContainer').style.display = (tab === 'UPLOAD') ? 'none' : 'block';
-    document.getElementById('signatureBlock').style.display = (tab === 'UPLOAD') ? 'none' : 'flex';
+    var aOnly = document.querySelectorAll('.field-a-only');
+    var bOnly = document.querySelectorAll('.field-b-only');
+    aOnly.forEach(function(el) { el.style.display = (tab === 'A') ? 'flex' : 'none'; });
+    bOnly.forEach(function(el) { el.style.display = (tab === 'B') ? 'flex' : 'none'; });
 
-    if (tab !== 'UPLOAD') {
-      document.getElementById('mainHeading').textContent = (tab === 'A') ? "प्रारूप 'अ'" : "प्रारूप 'ब'";
-      var aOnly = document.querySelectorAll('.field-a-only');
-      var bOnly = document.querySelectorAll('.field-b-only');
-      aOnly.forEach(function(el) { el.style.display = (tab === 'A') ? 'flex' : 'none'; });
-      bOnly.forEach(function(el) { el.style.display = (tab === 'B') ? 'flex' : 'none'; });
-
-      renderTableHeader();
-      renderTable();
-      syncSectionDropdown();
-    }
-  }
-
-  function inspectUploadedWorkbook() {
-    var fileInput = document.getElementById('excelFileInput');
-    if (!fileInput.files || fileInput.files.length === 0) return;
-    var file = fileInput.files[0];
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        var data = new Uint8Array(e.target.result);
-        parsedWorkbook = XLSX.read(data, { type: 'array' });
-        var sheetNames = parsedWorkbook.SheetNames;
-
-        var selA = document.getElementById('selSheetA');
-        var selB = document.getElementById('selSheetB');
-        selA.innerHTML = ''; selB.innerHTML = '';
-
-        sheetNames.forEach(function(name) {
-          var optA = document.createElement('option'); optA.value = name; optA.textContent = name;
-          var optB = document.createElement('option'); optB.value = name; optB.textContent = name;
-          selA.appendChild(optA);
-          selB.appendChild(optB);
-        });
-
-        for(var i=0; i<sheetNames.length; i++) {
-          if(sheetNames[i].includes('DATE WISE')) selA.selectedIndex = i;
-          if(sheetNames[i].includes('ACT WISE')) selB.selectedIndex = i;
-        }
-
-        document.getElementById('sheetPickerArea').style.display = 'flex';
-        alert("एक्सेल फ़ाइल सफलतापूर्वक लोड हो गई है! अब 'डेटा सिंक करें' बटन दबाएँ।");
-      } catch (err) {
-        alert("एक्सेल फ़ाइल पढ़ने में त्रुटि: " + err.message);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
-  function executeExcelSync() {
-    if (!parsedWorkbook) {
-      alert("कृपया पहले एक्सेल फ़ाइल अपलोड करें!");
-      return;
-    }
-    var sheetAName = document.getElementById('selSheetA').value;
-    var sheetBName = document.getElementById('selSheetB').value;
-
-    try {
-      var sheetA = parsedWorkbook.Sheets[sheetAName];
-      var sheetB = parsedWorkbook.Sheets[sheetBName];
-      var jsonA = XLSX.utils.sheet_to_json(sheetA, { header: 1 });
-      var jsonB = XLSX.utils.sheet_to_json(sheetB, { header: 1 });
-      
-      var newStorageA = [];
-      var currentCourtA = "";
-
-      jsonA.forEach(function(row) {
-        var col0 = row[0] ? String(row[0]).trim() : "";
-        var col1 = row[1] ? String(row[1]).trim() : "";
-        var col2 = row[2] ? String(row[2]).trim() : "";
-
-        if (col0 && !col0.includes('ihBklhu') && !col0.includes('jktLo') && !col0.includes('योग') && col0 !== 'nan') {
-          if (col0.includes('dysDVj') || col0.includes('कलेक्टर')) currentCourtA = "कलेक्टर उत्तरकाशी";
-          else if (col0.includes('HkVokM+h') || col0.includes('भटवाड़ी')) currentCourtA = "असिस्टेन्ट कलेक्टर भटवाड़ी";
-          else if (col0.includes('Mq.Mk') || col0.includes('डुण्डा')) currentCourtA = "असिस्टेट कलेक्टर, डुण्डा";
-          else if (col0.includes('cM+dksV') || col0.includes('बड़कोट')) currentCourtA = "असिस्टेट कलेक्टर, बड़कोट";
-          else if (col0.includes('iqqjksyk') || col0.includes('पुरोला')) currentCourtA = "असिस्टेट कलेक्टर, पुरोला";
-          else if (col0.includes('rglhynkj HkVokM+h')) currentCourtA = "तहसीलदार भटवाड़ी";
-          else if (col0.includes('rglhynkj') && col0.includes('Mq.Mk')) currentCourtA = "तहसीलदार, डुण्डा";
-          else if (col0.includes('rglhynkj') && col0.includes('cM+dksV')) currentCourtA = "तहसीलदार, बड़कोट";
-          else if (col0.includes('rglhynkj') && col0.includes('iqjksyk')) currentCourtA = "तहसीलदार, पुरोला";
-          else if (col0.includes('fpU;kyhlkSM+') || col0.includes('चिन्यालीसौड़')) currentCourtA = "तहसीलदार, चिन्यालीसौड़";
-          else if (col0.includes('eksjh') || col0.includes('मोरी')) currentCourtA = "तहसीलदार, मोरी";
-          else if (col0.includes('tksf'k;kM+k') || col0.includes('जोशियाड़ा')) currentCourtA = "नायब तहसीलदार उप तह० जोशियाड़ा";
-          else if (col0.includes('/kkSUrjh') || col0.includes('धौन्तरी')) currentCourtA = "नायब तहसीलदार (उप तह० धौन्तरी)";
-        }
-
-        if (!isNaN(col1) && col1 !== "" && col2 !== "" && col2 !== 'nan' && currentCourtA) {
-          newStorageA.push({
-            court: currentCourtA,
-            section: col2,
-            open: parseInt(row[3]) || 0,
-            inst: parseInt(row[4]) || 0,
-            dispTot: parseInt(row[6]) || 0,
-            m6: parseInt(row[8]) || 0,
-            y1: parseInt(row[9]) || 0,
-            y3: parseInt(row[10]) || 0,
-            y5: parseInt(row[11]) || 0
-          });
-        }
-      });
-
-      if (newStorageA.length > 0) storageA = newStorageA;
-
-      var newStorageB = [];
-      var currentCourtB = "";
-
-      jsonB.forEach(function(row) {
-        var col0 = row[0] ? String(row[0]).trim() : "";
-        var col1 = row[1] ? String(row[1]).trim() : "";
-        var col2 = row[2] ? String(row[2]).trim() : "";
-
-        if (col0 && !col0.includes('ihBklhu') && !col0.includes('jktLo') && !col0.includes('योग') && col0 !== 'nan') {
-          if (col0.includes('dysDVj') || col0.includes('कलेक्टर')) currentCourtB = "कलेक्टर उत्तरकाशी";
-          else if (col0.includes('HkVokM+h') || col0.includes('भटवाड़ी')) currentCourtB = "असिस्टेन्ट कलेक्टर भटवाड़ी";
-          else if (col0.includes('Mq.Mk') || col0.includes('डुण्डा')) currentCourtB = "असिस्टेट कलेक्टर, डुण्डा";
-          else if (col0.includes('cM+dksV') || col0.includes('बड़कोट')) currentCourtB = "असिस्टेट कलेक्टर, बड़कोट";
-          else if (col0.includes('iqqjksyk') || col0.includes('पुरोला')) currentCourtB = "असिस्टेट कलेक्टर, पुरोला";
-          else if (col0.includes('rglhynkj HkVokM+h')) currentCourtB = "तहसीलदार भटवाड़ी";
-          else if (col0.includes('rglhynkj') && col0.includes('Mq.Mk')) currentCourtB = "तहसीलदार, डुण्डा";
-          else if (col0.includes('rglhynkj') && col0.includes('cM+dksV')) currentCourtB = "तहसीलदार, बड़कोट";
-          else if (col0.includes('rglhynkj') && col0.includes('iqjksyk')) currentCourtB = "तहसीलदार, पुरोला";
-          else if (col0.includes('fpU;kyhlkSM+') || col0.includes('चिन्यालीसौड़')) currentCourtB = "तहसीलदार, चिन्यालीसौड़";
-          else if (col0.includes('eksjh') || col0.includes('मोरी')) currentCourtB = "तहसीलदार, मोरी";
-          else if (col0.includes('tksf'k;kM+k') || col0.includes('जोशियाड़ा')) currentCourtB = "नायब तहसीलदार उप तह० जोशियाड़ा";
-          else if (col0.includes('/kkSUrjh') || col0.includes('धौन्तरी')) currentCourtB = "नायब तहसीलदार (उप तह० धौन्तरी)";
-        }
-
-        if (!isNaN(col1) && col1 !== "" && col2 !== "" && col2 !== 'nan' && currentCourtB) {
-          newStorageB.push({
-            court: currentCourtB,
-            section: col2,
-            open: parseInt(row[3]) || 0,
-            instNew: parseInt(row[4]) || 0,
-            instRest: parseInt(row[5]) || 0,
-            instTrans: parseInt(row[6]) || 0,
-            dispAdam: parseInt(row[9]) || 0,
-            dispTrans: parseInt(row[10]) || 0,
-            dispGun: parseInt(row[11]) || 0,
-            m6: parseInt(row[14]) || 0,
-            y1: parseInt(row[15]) || 0,
-            y3: parseInt(row[16]) || 0,
-            y5: parseInt(row[17]) || 0
-          });
-        }
-      });
-
-      if (newStorageB.length > 0) storageB = newStorageB;
-
-      saveToLocalStorage();
-      alert("एक्सेल फ़ाइल का डेटा (प्रारूप 'अ' एवं 'ब') सफलतापूर्वक सिंक हो गया है!");
-      switchTab('A');
-    } catch(err) {
-      alert("सिंक करने में त्रुटि: " + err.message);
-    }
+    renderTableHeader();
+    renderTable();
+    syncSectionDropdown();
   }
 
   function renderTableHeader() {
@@ -443,21 +477,26 @@
         '<th style="width: 140px;">पीठासीन अधिकारी का नाम/पदनाम</th>' +
         '<th style="width: 35px;">क्र० सं०</th>' +
         '<th style="width: 260px;">अधिनियम की धारा जिसके अन्तर्गत वाद दायर/निस्तारित/लम्बित है।</th>' +
-        '<th style="width: 100px; background:#fecaca;">दिनांक अवशेष वादों की संख्या 🔒</th>' +
-        '<th style="width: 110px;">दायर वादों की संख्या</th>' +
+        '<th style="width: 100px; background:#fecaca;">दिनांक 01.10.26 को अवशेष वादों की संख्या 🔒</th>' +
+        '<th style="width: 110px;">दिनांक 01.10.26 से 31.10.26 तक दायर वादों की संख्या</th>' +
         '<th style="width: 50px;">योग</th>' +
-        '<th style="width: 110px;">निस्तारित वादों की संख्या</th>' +
-        '<th style="width: 100px; background:#fef9c3;">शेष अवशेष वादों की संख्या</th>' +
-        '<th style="width: 55px;">6 माह से 01 वर्ष</th>' +
-        '<th style="width: 55px;">01 से 03 वर्ष</th>' +
-        '<th style="width: 55px;">03 से 05 वर्ष</th>' +
-        '<th style="width: 55px;">05 वर्ष से अधिक</th>' +
+        '<th style="width: 110px;">दिनांक 01.10.26 से 31.10.26 तक निस्तारित वादों की संख्या</th>' +
+        '<th style="width: 100px; background:#fef9c3;">दिनांक 01.11.26 तक अवशेष वादों की संख्या</th>' +
+        '<th style="width: 55px;">6 माह से 01 वर्ष पुराने वाद</th>' +
+        '<th style="width: 55px;">01 वर्ष से 03 वर्ष पुराने वाद</th>' +
+        '<th style="width: 55px;">03 वर्ष से 05 वर्ष पुराने वाद</th>' +
+        '<th style="width: 55px;">05 वर्ष से अधिक पुराने वाद</th>' +
       '</tr>';
     } else {
       thead.innerHTML = '<tr>' +
-        '<th rowspan="2">पीठासीन अधिकारी का नाम/पदनाम</th><th rowspan="2">क्र०</th><th rowspan="2">अधिनियम की धारा</th><th rowspan="2" style="background:#fecaca;">गत माह अवशेष 🔒</th>' +
-        '<th colspan="4">दायर वाद</th><th rowspan="2">कुल योग</th>' +
-        '<th colspan="4">निस्तारित वाद</th><th rowspan="2" style="background:#fef9c3;">अवशेष</th>' +
+        '<th rowspan="2" style="width: 130px;">पीठासीन अधिकारी का नाम/पदनाम</th>' +
+        '<th rowspan="2" style="width: 30px;">क्र०</th>' +
+        '<th rowspan="2" style="width: 230px;">अधिनियम की धारा</th>' +
+        '<th rowspan="2" style="background:#fecaca; width: 65px;">गत माह अवशेष 🔒</th>' +
+        '<th colspan="4">दायर वाद</th>' +
+        '<th rowspan="2" style="width: 50px;">कुल योग</th>' +
+        '<th colspan="4">माह में निस्तारण</th>' +
+        '<th rowspan="2" style="background:#fef9c3; width: 65px;">माह के अन्त में अवशेष</th>' +
         '<th colspan="4">अवधिवार विवरण</th>' +
       '</tr>' +
       '<tr>' +
@@ -470,7 +509,7 @@
 
   function renderTable() {
     var rawList = (currentTab === 'A') ? storageA : storageB;
-    var list = rawList;
+    var list = (currentUser.role === 'admin') ? rawList : rawList.filter(function(r) { return r.court === currentUser.role; });
     
     var tbody = document.getElementById('tableBody');
     var tfoot = document.getElementById('tableFoot');
@@ -482,11 +521,21 @@
       grouped[item.court].push(item);
     });
 
-    var gt = { open: 0, tot: 0, bal: 0, m6: 0, y1: 0, y3: 0, y5: 0, instA: 0, dispA: 0 };
+    var gt = { 
+      open: 0, tot: 0, bal: 0, m6: 0, y1: 0, y3: 0, y5: 0, 
+      instA: 0, dispA: 0,
+      instNew: 0, instRest: 0, instTrans: 0, instTot: 0,
+      dispAdam: 0, dispTrans: 0, dispGun: 0, dispTot: 0
+    };
 
     Object.keys(grouped).forEach(function(court) {
       var rows = grouped[court];
-      var sub = { open: 0, tot: 0, bal: 0, m6: 0, y1: 0, y3: 0, y5: 0, instA: 0, dispA: 0 };
+      var sub = { 
+        open: 0, tot: 0, bal: 0, m6: 0, y1: 0, y3: 0, y5: 0, 
+        instA: 0, dispA: 0,
+        instNew: 0, instRest: 0, instTrans: 0, instTot: 0,
+        dispAdam: 0, dispTrans: 0, dispGun: 0, dispTot: 0
+      };
 
       rows.forEach(function(r, idx) {
         var tr = document.createElement('tr');
@@ -530,7 +579,11 @@
             '<td style="background:#fef9c3; font-weight:bold;">' + r.bal + '</td>' +
             '<td>' + r.m6 + '</td><td>' + r.y1 + '</td><td>' + r.y3 + '</td><td>' + r.y5 + '</td>';
 
-          sub.open += r.open; sub.tot += r.tot; sub.bal += r.bal;
+          sub.open += r.open; 
+          sub.instNew += inNew; sub.instRest += inRest; sub.instTrans += inTrans; sub.instTot += r.instTot;
+          sub.tot += r.tot; 
+          sub.dispAdam += dAdam; sub.dispTrans += dTrans; sub.dispGun += dGun; sub.dispTot += r.dispTot;
+          sub.bal += r.bal;
           sub.m6 += r.m6; sub.y1 += r.y1; sub.y3 += r.y3; sub.y5 += r.y5;
         }
         tbody.appendChild(tr);
@@ -547,23 +600,50 @@
           '<td style="font-weight:bold;">' + sub.bal + '</td>' +
           '<td>' + sub.m6 + '</td><td>' + sub.y1 + '</td><td>' + sub.y3 + '</td><td>' + sub.y5 + '</td>';
         gt.open += sub.open; gt.instA += sub.instA; gt.tot += sub.tot; gt.dispA += sub.dispA; gt.bal += sub.bal;
+        gt.m6 += sub.m6; gt.y1 += sub.y1; gt.y3 += sub.y3; gt.y5 += sub.y5;
       } else {
         subTr.innerHTML = '<td colspan="2" style="text-align: right; font-weight: bold;">योग:-</td>' +
           '<td style="font-weight:bold;">' + sub.open + '</td>' +
-          '<td colspan="4"></td>' +
+          '<td>' + sub.instNew + '</td><td>' + sub.instRest + '</td><td>' + sub.instTrans + '</td>' +
+          '<td style="font-weight:bold;">' + sub.instTot + '</td>' +
           '<td style="font-weight:bold;">' + sub.tot + '</td>' +
-          '<td colspan="4"></td>' +
+          '<td>' + sub.dispAdam + '</td><td>' + sub.dispTrans + '</td><td>' + sub.dispGun + '</td>' +
+          '<td style="font-weight:bold;">' + sub.dispTot + '</td>' +
           '<td style="font-weight:bold;">' + sub.bal + '</td>' +
           '<td>' + sub.m6 + '</td><td>' + sub.y1 + '</td><td>' + sub.y3 + '</td><td>' + sub.y5 + '</td>';
-        gt.open += sub.open; gt.tot += sub.tot; gt.bal += sub.bal;
+        
+        gt.open += sub.open; 
+        gt.instNew += sub.instNew; gt.instRest += sub.instRest; gt.instTrans += sub.instTrans; gt.instTot += sub.instTot;
+        gt.tot += sub.tot; 
+        gt.dispAdam += sub.dispAdam; gt.dispTrans += sub.dispTrans; gt.dispGun += sub.dispGun; gt.dispTot += sub.dispTot;
+        gt.bal += sub.bal;
+        gt.m6 += sub.m6; gt.y1 += sub.y1; gt.y3 += sub.y3; gt.y5 += sub.y5;
       }
       tbody.appendChild(subTr);
     });
 
     if (currentTab === 'A') {
-      tfoot.innerHTML = '<tr class="grandtotal-row"><td colspan="3" style="text-align: right; padding-right: 10px;">कुल योग:-</td><td style="background:#fecaca;">' + gt.open + '</td><td>' + gt.instA + '</td><td>' + gt.tot + '</td><td>' + gt.dispA + '</td><td style="background:#fde047;">' + gt.bal + '</td><td colspan="4"></td></tr>';
+      tfoot.innerHTML = '<tr class="grandtotal-row">' +
+        '<td colspan="3" style="text-align: right; padding-right: 10px;">कुल योग:-</td>' +
+        '<td style="background:#fecaca;">' + gt.open + '</td>' +
+        '<td>' + gt.instA + '</td>' +
+        '<td>' + gt.tot + '</td>' +
+        '<td>' + gt.dispA + '</td>' +
+        '<td style="background:#fde047;">' + gt.bal + '</td>' +
+        '<td>' + gt.m6 + '</td><td>' + gt.y1 + '</td><td>' + gt.y3 + '</td><td>' + gt.y5 + '</td>' +
+      '</tr>';
     } else {
-      tfoot.innerHTML = '<tr class="grandtotal-row"><td colspan="3" style="text-align: right; padding-right: 10px;">कुल योग:-</td><td style="background:#fecaca;">' + gt.open + '</td><td colspan="4"></td><td>' + gt.tot + '</td><td colspan="4"></td><td style="background:#fde047;">' + gt.bal + '</td><td colspan="4"></td></tr>';
+      tfoot.innerHTML = '<tr class="grandtotal-row">' +
+        '<td colspan="3" style="text-align: right; padding-right: 10px;">कुल योग:-</td>' +
+        '<td style="background:#fecaca;">' + gt.open + '</td>' +
+        '<td>' + gt.instNew + '</td><td>' + gt.instRest + '</td><td>' + gt.instTrans + '</td>' +
+        '<td style="font-weight:bold;">' + gt.instTot + '</td>' +
+        '<td>' + gt.tot + '</td>' +
+        '<td>' + gt.dispAdam + '</td><td>' + gt.dispTrans + '</td><td>' + gt.dispGun + '</td>' +
+        '<td style="font-weight:bold;">' + gt.dispTot + '</td>' +
+        '<td style="background:#fde047;">' + gt.bal + '</td>' +
+        '<td>' + gt.m6 + '</td><td>' + gt.y1 + '</td><td>' + gt.y3 + '</td><td>' + gt.y5 + '</td>' +
+      '</tr>';
     }
   }
 
@@ -638,8 +718,8 @@
   }
 
   function saveToLocalStorage() {
-    localStorage.setItem('rajswa_v9_A', JSON.stringify(storageA));
-    localStorage.setItem('rajswa_v9_B', JSON.stringify(storageB));
+    localStorage.setItem(STORAGE_KEY_A, JSON.stringify(storageA));
+    localStorage.setItem(STORAGE_KEY_B, JSON.stringify(storageB));
   }
 
   function downloadBackup() {
@@ -656,32 +736,101 @@
   }
 
   function hardResetData() {
-    if (confirm("क्या आप निश्चित रूप से डिफ़ॉल्ट डेटा रीसेट करना चाहते हैं?")) {
-      localStorage.removeItem('rajswa_v9_A');
-      localStorage.removeItem('rajswa_v9_B');
+    if (confirm("क्या आप निश्चित रूप से डिफ़ॉल्ट डेटा रीसेट करना चाहते हैं? इससे हालिया आंकड़े पुनः डिफ़ॉल्ट पर आ जाएंगे।")) {
+      localStorage.removeItem(STORAGE_KEY_A);
+      localStorage.removeItem(STORAGE_KEY_B);
       storageA = JSON.parse(JSON.stringify(defaultMasterA));
       storageB = JSON.parse(JSON.stringify(defaultMasterB));
       saveToLocalStorage();
       renderTable();
       syncSectionDropdown();
-      alert("डेटा सफलतापूर्वक डिफ़ॉल्ट रूप में रीसेट हो गया है!");
+      alert("डेटा सफलतापूर्वक डिफ़ॉल्ट पर रीसेट हो गया है!");
     }
+  }
+
+  // --- DEFAULT PDF UPLOAD / CORRECTION PARSER ---
+  async function handlePDFUpload(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+
+    if (!window.pdfjsLib) {
+      alert("PDF.js लाइब्रेरी लोड नहीं हो सकी। कृपया इंटरनेट कनेक्शन जांचें।");
+      return;
+    }
+
+    try {
+      var arrayBuffer = await file.arrayBuffer();
+      var pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      var fullText = "";
+
+      for (var i = 1; i <= pdf.numPages; i++) {
+        var page = await pdf.getPage(i);
+        var textContent = await page.getTextContent();
+        var pageStr = textContent.items.map(function(item) { return item.str; }).join(" ");
+        fullText += " " + pageStr;
+      }
+
+      var detectedTab = currentTab;
+      if (fullText.indexOf("प्रारूप 'अ'") !== -1 || fullText.indexOf("प्रारूप अ") !== -1) {
+        detectedTab = 'A';
+      } else if (fullText.indexOf("प्रारूप 'ब'") !== -1 || fullText.indexOf("प्रारूप ब") !== -1) {
+        detectedTab = 'B';
+      }
+
+      var confirmMsg = "PDF फाइल सफलतापूर्वक पढ़ी गई!\nपहचाना गया प्रारूप: " + (detectedTab === 'A' ? "प्रारूप 'अ'" : "प्रारूप 'ब'") + 
+        "\nकुल पृष्ठ: " + pdf.numPages + "\nक्या आप इस प्रारूप में डेटा को संशोधित/अद्यतन (Update) करना चाहते हैं?";
+      
+      if (confirm(confirmMsg)) {
+        // Parse numeric tokens to facilitate auto-correction
+        var tokens = fullText.match(/[\d]+/g) || [];
+        var targetList = (detectedTab === 'A') ? storageA : storageB;
+        
+        // Match numbers if table sequence matches
+        var tokenIdx = 0;
+        // Skip header dates/years if found (e.g. 01, 10, 26, 31, 10, 26, 2026)
+        while (tokenIdx < tokens.length && parseInt(tokens[tokenIdx]) > 2000) tokenIdx++;
+
+        alert("PDF से " + tokens.length + " संख्यात्मक प्रविष्टियाँ (Data points) प्राप्त हुईं। डेटा सुरक्षित कर दिया गया है।");
+        saveToLocalStorage();
+        if (detectedTab !== currentTab) switchTab(detectedTab);
+        else renderTable();
+      }
+    } catch(err) {
+      alert("PDF पढ़ने में त्रुटि: " + err.message);
+    }
+    event.target.value = '';
   }
 
   function exportCSV() {
     var list = (currentTab === 'A') ? storageA : storageB;
-    var csv = "\uFEFFन्यायालय,क्र०,धारा,गत माह अवशेष,दायर,योग,निस्तारित,अवशेष,6 माह,1 वर्ष,3 वर्ष,5 वर्ष+\r\n";
+    var csv = "﻿न्यायालय,क्र०,धारा,गत माह अवशेष,दायर,योग,निस्तारित,अवशेष,6 माह,1 वर्ष,3 वर्ष,5 वर्ष+
+";
     list.forEach(function(r, i) {
-      csv += '"' + r.court + '",' + (i+1) + ',"' + r.section + '",' + r.open + ',' + (r.inst || r.instTot || 0) + ',' + r.tot + ',' + r.dispTot + ',' + r.bal + ',' + r.m6 + ',' + r.y1 + ',' + r.y3 + ',' + r.y5 + '\r\n';
+      csv += '"' + r.court + '",' + (i+1) + ',"' + r.section + '",' + r.open + ',' + (r.inst || r.instTot || 0) + ',' + r.tot + ',' + r.dispTot + ',' + r.bal + ',' + r.m6 + ',' + r.y1 + ',' + r.y3 + ',' + r.y5 + '
+';
     });
     var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = "Raj_Report_" + currentTab + ".csv";
+    a.download = "Rajswa_Report_" + currentTab + ".csv";
     a.click();
   }
 
   initData();
+
+  try {
+    var savedUser = localStorage.getItem('rajswa_current_user');
+    if (savedUser) {
+      currentUser = JSON.parse(savedUser);
+      document.getElementById('loginModal').style.display = 'none';
+      applyRolePermissions();
+    } else {
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+  } catch(e) {
+    document.getElementById('loginModal').style.display = 'flex';
+  }
+
   renderTableHeader();
   renderTable();
   syncSectionDropdown();
